@@ -12,8 +12,11 @@
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "core-js": "^3.6.5",
+    "mitt": "^3.0.0",
+    "node-ssdp": "^4.0.1",
     "quasar": "^2.0.0",
-    "vuex": "^4.0.1"
+    "vuex": "^4.0.1",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
