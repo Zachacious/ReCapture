@@ -1,0 +1,7 @@
+{
+  "appId": "zm.recapture.app",
+  "appName": "recapture",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www"
+}

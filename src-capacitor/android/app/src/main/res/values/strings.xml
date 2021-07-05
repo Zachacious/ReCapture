@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">recapture</string>
+    <string name="title_activity_main">recapture</string>
+    <string name="package_name">zm.recapture.app</string>
+    <string name="custom_url_scheme">zm.recapture.app</string>
+</resources>
