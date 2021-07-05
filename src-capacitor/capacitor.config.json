@@ -3,5 +3,6 @@
   "appName": "recapture",
   "bundledWebRuntime": false,
   "npmClient": "npm",
-  "webDir": "www"
+  "webDir": "www",
+  "hideLogs": false
 }

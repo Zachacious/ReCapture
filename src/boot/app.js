@@ -1,4 +1,8 @@
 // import events from "../utils/events";
-import cameraConnection from "../SonySDK/connection";
+// import cameraConnection from "../SonySDK/connection";
 
-cameraConnection.pollConnection();
+// cameraConnection.pollConnection();
+
+// setInterval(() => {
+//   console.log("*************************************");
+// }, 500);

@@ -5,8 +5,11 @@
   "author": "zachacious <back4moore@gmail.com>",
   "private": true,
   "dependencies": {
-    "@capacitor/android": "^2.4.7",
-    "@capacitor/cli": "^2.0.0",
-    "@capacitor/core": "^2.0.0"
+    "@capacitor/android": "^3.0.2",
+    "@capacitor/app": "^1.0.0",
+    "@capacitor/cli": "^3.0.0",
+    "@capacitor/core": "^3.0.0",
+    "@capacitor/splash-screen": "^1.0.0",
+    "Service-Discovery-DLNA-SSDP": "^0.2.1"
   }
 }

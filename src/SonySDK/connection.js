@@ -1,7 +1,7 @@
-import Client from "node-ssdp";
-const client = new Client();
-import xml2js from "xml2js";
-const stringParserXML = xml2js.parseString;
+// import Client from "node-ssdp";
+// const client = new Client();
+// import xml2js from "xml2js";
+// const stringParserXML = xml2js.parseString;
 import events from "../utils/events";
 
 let sony = {};
@@ -81,3 +81,5 @@ sony.pollConnection = async () => {
     events.emit("sony-disconnected");
   }, sony.connection.timeLimit);
 };
+
+export default sony;
