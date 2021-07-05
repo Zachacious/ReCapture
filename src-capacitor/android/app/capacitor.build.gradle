@@ -11,6 +11,7 @@ apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
     implementation project(':capacitor-app')
     implementation project(':capacitor-splash-screen')
+    implementation project(':ssdpcapacitor')
     implementation "com.loopj.android:android-async-http:1.4.9"
 }
 
