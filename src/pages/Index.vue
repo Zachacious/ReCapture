@@ -1,38 +1,45 @@
 <template>
   <q-page class="flex flex-center">
-    <!-- <img
-      alt="Quasar logo"
-      src="~assets/quasar-logo-vertical.svg"
-      style="width: 200px; height: 200px"
-    /> -->
+    <q-btn @click="search()" label="Search" />
   </q-page>
 </template>
 
 <script>
 import { defineComponent } from "vue";
-// import { ssdpcapacitor } from "ssdpcapacitor";
-// import { SSDPPlugin } from ".";
-// console.log(SDDPPlugin);
-// import { registerPlugin } from "@capacitor/core";
-
-// const ssdp = registerPlugin("SSDPPlugin");
 
 export default defineComponent({
   name: "PageIndex",
+  methods: {
+    async search() {
+      const res = await this.$q.capacitor.Plugins.ssdpPlugin
+        .search({
+          options: {
+            ST: "ssdp:all",
+            // ST: "urn:schemas-sony-com:service:ScalarWebAPI:1",
+            MX: "1",
+            HOST: "239.255.255.250",
+            MAN: "ssdp:discover",
+            PORT: "1900",
+          },
+        })
+        .then((r) => console.log(r));
+      console.log(res);
+    },
+  },
+
   async mounted() {
     console.log(this.$q);
     const res = await this.$q.capacitor.Plugins.ssdpPlugin.search({
-      message: "TESTING...",
+      options: {
+        ST: "ssdp:all",
+        // ST: "urn:schemas-sony-com:service:ScalarWebAPI:1",
+        MX: "1",
+        HOST: "239.255.255.250",
+        MAN: "ssdp:discover",
+        PORT: "1900",
+      },
     });
     console.log(res);
-    // console.log(await ssdp.echo("hello"));
-    // const ssdp = await this.$q.capacitor.registerPlugin("ssdpcapacitor");
-    // console.log(ssdp);
-    // console.log(this.$q.capacitor.Plugins.SSDPPlugin);
-    // console.log(this.$q.capacitor.Plugins);
-    // console.log(await this.$q.capacitor.Plugins.ssdpcapacitor.echo("hello"));
-    // const { value } = await ssdp.echo({ value: "hello" });
-    // console.log(value);
   },
 });
 </script>

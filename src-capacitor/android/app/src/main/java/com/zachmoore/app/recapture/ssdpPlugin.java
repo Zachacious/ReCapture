@@ -79,8 +79,33 @@ public class ssdpPlugin extends Plugin {
   @PluginMethod()
   public void search(PluginCall call) {
     JSObject ret = new JSObject();
-
     Context ctx = getContext();
+
+    JSObject defaultOptions = new JSObject();
+    defaultOptions.put("ST", "ssdp:all");
+    defaultOptions.put("HOST", "239.255.255.250");
+    defaultOptions.put("MAN", "ssdp:discover");
+    defaultOptions.put("MX", "1");
+    defaultOptions.put("PORT", "1900");
+
+    JSObject options = call.getObject("options", defaultOptions);
+
+    if (!options.has("ST")) {
+      options.put("ST", "ssdp:all");
+    }
+    if (!options.has("HOST")) {
+      options.put("HOST", "239.255.255.250");
+    }
+    if (!options.has("MAN")) {
+      options.put("MAN", "ssdp:discover");
+    }
+    if (!options.has("MX")) {
+      options.put("MX", "1");
+    }
+    if (!options.has("PORT")) {
+      options.put("PORT", "1900");
+    }
+
     WifiManager wifi = (WifiManager)ctx.getApplicationContext().getSystemService( ctx.getApplicationContext().WIFI_SERVICE );
 
     if(wifi != null) {
@@ -91,16 +116,25 @@ public class ssdpPlugin extends Plugin {
       DatagramSocket socket = null;
 
       try {
-
-        InetAddress group = InetAddress.getByName("239.255.255.250");
-        int port = 1900;
-        String query =
-          "M-SEARCH * HTTP/1.1\r\n" +
-            "HOST: 239.255.255.250:1900\r\n"+
-            "MAN: \"ssdp:discover\"\r\n"+
-            "MX: 1\r\n"+
-            "ST: ssdp:all\r\n"+  // Use for Sonos
+          InetAddress group = InetAddress.getByName(options.getString("HOST"));
+          int port = Integer.parseInt(options.getString("PORT"));
+          String query =
+            "M-SEARCH * HTTP/1.1\r\n" +
+            "HOST: " + options.getString("HOST") + ":" + options.getString("PORT") + "\r\n" +
+            "MAN: " + options.getString("MAN") + "\r\n" +
+            "MX: " + options.getString("MX") + "\r\n" +
+            "ST: " + options.getString("ST") + "\r\n" +
             "\r\n";
+
+//        InetAddress group = InetAddress.getByName("239.255.255.250");
+//        int port = 1900;
+//        String query =
+//          "M-SEARCH * HTTP/1.1\r\n" +
+//            "HOST: 239.255.255.250:1900\r\n"+
+//            "MAN: \"ssdp:discover\"\r\n"+
+//            "MX: 1\r\n"+
+//            "ST: ssdp:all\r\n"+  // Use for Sonos
+//            "\r\n";
 
         socket = new DatagramSocket(port);
         socket.setReuseAddress(true);
@@ -128,6 +162,7 @@ public class ssdpPlugin extends Plugin {
             } catch (JSONException e) {
               e.printStackTrace();
             }
+
             addresses.add(p.getAddress().getHostAddress());
 
           curTime = System.currentTimeMillis();
@@ -139,7 +174,7 @@ public class ssdpPlugin extends Plugin {
         e.printStackTrace();
       }
       finally {
-        socket.close();
+        if(socket != null) socket.close();
       }
       lock.release();
     }
@@ -147,6 +182,6 @@ public class ssdpPlugin extends Plugin {
     ret.put("devices", mDeviceList);
     logger.log(Level.ALL, mDeviceList.toString());
     ret.put("addresses", addresses);
-    call.success(ret);
+    call.resolve(ret);
   }
 }

@@ -4,6 +4,7 @@
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",
+  "hideLogs": false,
   "server": {
     "url": "http://192.168.1.14:8080"
   }
