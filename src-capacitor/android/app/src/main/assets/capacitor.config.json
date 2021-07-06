@@ -1,8 +1,10 @@
 {
-	"appId": "zm.recapture.app",
-	"appName": "recapture",
-	"bundledWebRuntime": false,
-	"npmClient": "npm",
-	"webDir": "www",
-	"hideLogs": false
+  "appId": "com.zachmoore.app.recapture",
+  "appName": "recapture",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "server": {
+    "url": "http://192.168.1.14:8080"
+  }
 }

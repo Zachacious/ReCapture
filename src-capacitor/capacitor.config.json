@@ -1,8 +1,7 @@
 {
-  "appId": "zm.recapture.app",
+  "appId": "com.zachmoore.app.recapture",
   "appName": "recapture",
   "bundledWebRuntime": false,
   "npmClient": "npm",
-  "webDir": "www",
-  "hideLogs": false
+  "webDir": "www"
 }
