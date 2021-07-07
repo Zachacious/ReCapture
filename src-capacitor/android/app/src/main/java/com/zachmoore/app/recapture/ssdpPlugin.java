@@ -19,21 +19,26 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import cz.msebera.android.httpclient.Header;
+
+//import java.util.logging.Level;
+//import java.util.logging.Logger;
 
 @NativePlugin()
 public class ssdpPlugin extends Plugin {
 
-  Logger logger = Logger.getLogger(ssdpPlugin.class.getName());
+//  Logger logger = Logger.getLogger(ssdpPlugin.class.getName());
 
   HashSet<String> addresses = new HashSet<>();
-  private JSONArray mDeviceList = new JSONArray();
+  HashSet<String> errors = new HashSet<>();
+  JSONArray mDeviceList = new JSONArray();
   Context ctx;
 
   public static String parseHeaderValue(String content, String headerName) {
@@ -55,15 +60,15 @@ public class ssdpPlugin extends Plugin {
   }
 
   private void createServiceObjWithXMLData(String url, final JSONObject jsonObj) {
-    Context ctx = getContext();
+    ctx = getContext();
     SyncHttpClient syncRequest = new SyncHttpClient();
     syncRequest.get(ctx.getApplicationContext(), url, new AsyncHttpResponseHandler() {
       @Override
       public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
         try {
-          JSONObject device = jsonObj;
-          device.put("xml", new String(responseBody));
-          mDeviceList.put(device);
+//          JSONObject jsonObj;
+          jsonObj.put("xml", new String(responseBody));
+          mDeviceList.put(jsonObj);
         } catch (JSONException e) {
           e.printStackTrace();
         }
@@ -71,15 +76,18 @@ public class ssdpPlugin extends Plugin {
       @Override
       public void onFailure(int statusCode, Header[] headers, byte[] responseBody,
                             Throwable error) {
-        logger.log(Level.ALL, responseBody.toString());
+        System.out.print(new String(responseBody));
+//        logger.log(Level.ALL, responseBody.toString());
       }
     });
   }
 
   @PluginMethod()
-  public void search(PluginCall call) {
+  public void search(PluginCall call){
     JSObject ret = new JSObject();
-    Context ctx = getContext();
+    ctx = getContext();
+
+    mDeviceList = new JSONArray();
 
     JSObject defaultOptions = new JSObject();
     defaultOptions.put("ST", "ssdp:all");
@@ -87,6 +95,7 @@ public class ssdpPlugin extends Plugin {
     defaultOptions.put("MAN", "ssdp:discover");
     defaultOptions.put("MX", "1");
     defaultOptions.put("PORT", "1900");
+    defaultOptions.put("TIMEOUT", "3000");
 
     JSObject options = call.getObject("options", defaultOptions);
 
@@ -105,6 +114,9 @@ public class ssdpPlugin extends Plugin {
     if (!options.has("PORT")) {
       options.put("PORT", "1900");
     }
+    if (!options.has("TIMEOUT")) {
+      options.put("TIMEOUT", "3000");
+    }
 
     WifiManager wifi = (WifiManager)ctx.getApplicationContext().getSystemService( ctx.getApplicationContext().WIFI_SERVICE );
 
@@ -112,6 +124,8 @@ public class ssdpPlugin extends Plugin {
 
       WifiManager.MulticastLock lock = wifi.createMulticastLock("The Lock");
       lock.acquire();
+
+      InetSocketAddress srcAddress = new InetSocketAddress(Integer.parseInt(options.getString("PORT")));
 
       DatagramSocket socket = null;
 
@@ -126,32 +140,36 @@ public class ssdpPlugin extends Plugin {
             "ST: " + options.getString("ST") + "\r\n" +
             "\r\n";
 
-//        InetAddress group = InetAddress.getByName("239.255.255.250");
-//        int port = 1900;
-//        String query =
-//          "M-SEARCH * HTTP/1.1\r\n" +
-//            "HOST: 239.255.255.250:1900\r\n"+
-//            "MAN: \"ssdp:discover\"\r\n"+
-//            "MX: 1\r\n"+
-//            "ST: ssdp:all\r\n"+  // Use for Sonos
-//            "\r\n";
+        // Send multi-cast packet
+        DatagramPacket dgram = new DatagramPacket(query.getBytes(), query.length(),
+          group, port);
+
+        MulticastSocket multicast = null;
+        try {
+          multicast = new MulticastSocket(null);
+          multicast.bind(srcAddress);
+          multicast.setTimeToLive(4);
+          multicast.send(dgram);
+        } finally {
+          if (multicast != null) {
+            multicast.disconnect();
+            multicast.close();
+          }
+        }
 
         socket = new DatagramSocket(port);
         socket.setReuseAddress(true);
+        int timeout = Integer.parseInt(options.getString("TIMEOUT"));
+        socket.setSoTimeout(timeout);
 
-        DatagramPacket dgram = new DatagramPacket(query.getBytes(), query.length(),
-          group, port);
         socket.send(dgram);
 
-        long time = System.currentTimeMillis();
-        long curTime = System.currentTimeMillis();
+        while (true) {
+          try {
+            DatagramPacket p = new DatagramPacket(new byte[1536], 1536);
+            socket.receive(p);
 
-        // Let's consider all the responses we can get in 1 second
-        while (curTime - time < 1000) {
-          DatagramPacket p = new DatagramPacket(new byte[1536], 1536);
-          socket.receive(p);
-
-          String s = new String(p.getData());
+            String s = new String(p.getData());
             try {
               JSONObject device = new JSONObject();
               device.put("USN", parseHeaderValue(s, "USN"));
@@ -161,27 +179,49 @@ public class ssdpPlugin extends Plugin {
               createServiceObjWithXMLData(parseHeaderValue(s, "LOCATION"), device);
             } catch (JSONException e) {
               e.printStackTrace();
+              errors.add("Error converting xml");
             }
 
             addresses.add(p.getAddress().getHostAddress());
+          } catch (SocketTimeoutException e) {
+            ret.put("devices", mDeviceList);
+            ret.put("addresses", addresses);
+            ret.put("errors", errors);
+            call.success(ret);
+            return;
+//            break;
+          }
 
-          curTime = System.currentTimeMillis();
         }
 
       } catch (UnknownHostException e) {
         e.printStackTrace();
+        errors.add("Error Unknown host" + e.getMessage());
+        ret.put("devices", mDeviceList);
+        ret.put("addresses", addresses);
+        ret.put("errors", errors);
+        call.resolve(ret);
       } catch (IOException e) {
         e.printStackTrace();
+        errors.add("IO Error" + e.getMessage());
+        ret.put("devices", mDeviceList);
+        ret.put("addresses", addresses);
+        ret.put("errors", errors);
+        call.resolve(ret);
       }
       finally {
-        if(socket != null) socket.close();
+        if(socket != null) {
+          socket.disconnect();
+          socket.close();
+        }
       }
       lock.release();
+      return;
     }
 
     ret.put("devices", mDeviceList);
-    logger.log(Level.ALL, mDeviceList.toString());
     ret.put("addresses", addresses);
+    ret.put("errors", errors);
     call.resolve(ret);
   }
 }
