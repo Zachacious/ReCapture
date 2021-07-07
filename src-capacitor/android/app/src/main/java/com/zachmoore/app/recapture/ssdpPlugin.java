@@ -41,7 +41,7 @@ public class ssdpPlugin extends Plugin {
   JSONArray mDeviceList = new JSONArray();
   Context ctx;
 
-  public static String parseHeaderValue(String content, String headerName) {
+  public String parseHeaderValue(String content, String headerName) {
     Scanner s = new Scanner(content);
     s.nextLine();
     while (s.hasNextLine()) {
@@ -49,6 +49,7 @@ public class ssdpPlugin extends Plugin {
       int index = line.indexOf(':');
 
       if (index == -1) {
+        errors.add("parse error");
         return null;
       }
       String header = line.substring(0, index);
@@ -56,10 +57,11 @@ public class ssdpPlugin extends Plugin {
         return line.substring(index + 1).trim();
       }
     }
+    errors.add("parse error");
     return null;
   }
 
-  private void createServiceObjWithXMLData(String url, final JSONObject jsonObj) {
+  public void createServiceObjWithXMLData(String url, final JSONObject jsonObj) {
     ctx = getContext();
     SyncHttpClient syncRequest = new SyncHttpClient();
     syncRequest.get(ctx.getApplicationContext(), url, new AsyncHttpResponseHandler() {
@@ -70,6 +72,7 @@ public class ssdpPlugin extends Plugin {
           jsonObj.put("xml", new String(responseBody));
           mDeviceList.put(jsonObj);
         } catch (JSONException e) {
+          errors.add("XML error: " + e.getMessage());
           e.printStackTrace();
         }
       }
@@ -78,6 +81,7 @@ public class ssdpPlugin extends Plugin {
                             Throwable error) {
         System.out.print(new String(responseBody));
 //        logger.log(Level.ALL, responseBody.toString());
+        errors.add("XML error: " + new String(responseBody));
       }
     });
   }
@@ -88,6 +92,8 @@ public class ssdpPlugin extends Plugin {
     ctx = getContext();
 
     mDeviceList = new JSONArray();
+    addresses = new HashSet<>();
+    errors = new HashSet<>();
 
     JSObject defaultOptions = new JSObject();
     defaultOptions.put("ST", "ssdp:all");
@@ -139,6 +145,8 @@ public class ssdpPlugin extends Plugin {
             "MX: " + options.getString("MX") + "\r\n" +
             "ST: " + options.getString("ST") + "\r\n" +
             "\r\n";
+
+          errors.add(query);
 
         // Send multi-cast packet
         DatagramPacket dgram = new DatagramPacket(query.getBytes(), query.length(),

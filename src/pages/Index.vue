@@ -1,6 +1,9 @@
 <template>
   <q-page class="flex flex-center">
     <q-btn @click="search()" label="Search" />
+    <div class="q-pa-md">
+      {{ value }}
+    </div>
   </q-page>
 </template>
 
@@ -9,6 +12,11 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "PageIndex",
+  data() {
+    return {
+      value: "",
+    };
+  },
   methods: {
     async search() {
       const res = await this.$q.capacitor.Plugins.ssdpPlugin.search({
@@ -19,10 +27,11 @@ export default defineComponent({
           HOST: "239.255.255.250",
           MAN: "ssdp:discover",
           PORT: "1900",
-          TIMEOUT: "1500",
+          TIMEOUT: "3000",
         },
       });
       console.log(res);
+      this.value = res.devices;
     },
   },
 
