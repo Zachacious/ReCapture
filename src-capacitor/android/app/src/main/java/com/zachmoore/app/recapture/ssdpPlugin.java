@@ -2,7 +2,10 @@ package com.zachmoore.app.recapture;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
+import android.util.Log;
 
+import com._8rine.upnpdiscovery.UPnPDevice;
+import com._8rine.upnpdiscovery.UPnPDiscovery;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
@@ -62,6 +65,7 @@ public class ssdpPlugin extends Plugin {
   }
 
   public void createServiceObjWithXMLData(String url, final JSONObject jsonObj) {
+    errors.add(url);
     ctx = getContext();
     SyncHttpClient syncRequest = new SyncHttpClient();
     syncRequest.get(ctx.getApplicationContext(), url, new AsyncHttpResponseHandler() {
@@ -82,6 +86,39 @@ public class ssdpPlugin extends Plugin {
         System.out.print(new String(responseBody));
 //        logger.log(Level.ALL, responseBody.toString());
         errors.add("XML error: " + new String(responseBody));
+      }
+    });
+  }
+
+  @PluginMethod()
+  public void searchNew(PluginCall call) {
+    UPnPDiscovery.discoveryDevices(getActivity(), new UPnPDiscovery.OnDiscoveryListener() {
+      JSObject ret = new JSObject();
+
+      @Override
+      public void OnStart() {
+        Log.d("UPnPDiscovery", "Starting discovery");
+      }
+
+      @Override
+      public void OnFoundNewDevice(UPnPDevice device) {
+        Log.d("UPnPDiscovery", "Found new device: " + device.toString());
+        // String friendlyName = device.getFriendlyName();
+        // ... see UPnPDevice description below
+
+        ret.put(device.getFriendlyName(), device);
+      }
+
+      @Override
+      public void OnFinish(HashSet<UPnPDevice> devices) {
+        Log.d("UPnPDiscovery", "Finish discovery");
+        call.success(ret);
+      }
+
+      @Override
+      public void OnError(Exception e) {
+        Log.d("UPnPDiscovery", "Error: " + e.getLocalizedMessage());
+        call.error(e.getLocalizedMessage());
       }
     });
   }
@@ -126,31 +163,50 @@ public class ssdpPlugin extends Plugin {
 
     WifiManager wifi = (WifiManager)ctx.getApplicationContext().getSystemService( ctx.getApplicationContext().WIFI_SERVICE );
 
-    if(wifi != null) {
+//    if(wifi != null) {
 
       WifiManager.MulticastLock lock = wifi.createMulticastLock("The Lock");
       lock.acquire();
 
-      InetSocketAddress srcAddress = new InetSocketAddress(Integer.parseInt(options.getString("PORT")));
+    int port = Integer.parseInt(options.getString("PORT"));
+
+      InetSocketAddress srcAddress = new InetSocketAddress(port);
 
       DatagramSocket socket = null;
+//        MulticastSocket socket = null;
 
       try {
-          InetAddress group = InetAddress.getByName(options.getString("HOST"));
-          int port = Integer.parseInt(options.getString("PORT"));
-          String query =
-            "M-SEARCH * HTTP/1.1\r\n" +
-            "HOST: " + options.getString("HOST") + ":" + options.getString("PORT") + "\r\n" +
+//          InetAddress group = InetAddress.getByName(options.getString("HOST"));
+
+        String query =
+          "M-SEARCH * HTTP/1.1\r\n" +
             "MAN: " + options.getString("MAN") + "\r\n" +
             "MX: " + options.getString("MX") + "\r\n" +
+            "HOST: " + options.getString("HOST") + ":" + options.getString("PORT") + "\r\n" +
             "ST: " + options.getString("ST") + "\r\n" +
+            "USER-AGENT: Recapture SSDP\r\n" +
             "\r\n";
 
-          errors.add(query);
+//          String query =
+//            "M-SEARCH * HTTP/1.1\r\n" +
+//            "HOST: " + options.getString("HOST") + ":" + options.getString("PORT") + "\r\n" +
+//            "MAN: " + options.getString("MAN") + "\r\n" +
+//            "MX: " + options.getString("MX") + "\r\n" +
+//            "ST: " + options.getString("ST") + "\r\n" +
+//            "USER-AGENT: Recapture SSDP\r\n" +
+//            "\r\n";
+
+//          errors.add(query);
 
         // Send multi-cast packet
-        DatagramPacket dgram = new DatagramPacket(query.getBytes(), query.length(),
-          group, port);
+        InetSocketAddress dstAddress = new InetSocketAddress(InetAddress.getByName(options.getString("HOST")), port);
+//        DatagramPacket dgram = new DatagramPacket(query.getBytes(), query.length(),
+//          group, port);
+        byte[] queryBytes = query.getBytes();
+        DatagramPacket dgram = new DatagramPacket(queryBytes, queryBytes.length,
+          dstAddress);
+
+        int timeout = Integer.parseInt(options.getString("TIMEOUT"));
 
         MulticastSocket multicast = null;
         try {
@@ -158,6 +214,8 @@ public class ssdpPlugin extends Plugin {
           multicast.bind(srcAddress);
           multicast.setTimeToLive(4);
           multicast.send(dgram);
+//          multicast.setSoTimeout(3000);
+//          multicast.setReuseAddress(true);
         } finally {
           if (multicast != null) {
             multicast.disconnect();
@@ -166,18 +224,22 @@ public class ssdpPlugin extends Plugin {
         }
 
         socket = new DatagramSocket(port);
+//        socket = new MulticastSocket(port);
         socket.setReuseAddress(true);
-        int timeout = Integer.parseInt(options.getString("TIMEOUT"));
-        socket.setSoTimeout(timeout);
+        socket.setBroadcast(true);
+        socket.bind(new InetSocketAddress(port));
 
+        socket.setSoTimeout(timeout);
         socket.send(dgram);
 
         while (true) {
           try {
-            DatagramPacket p = new DatagramPacket(new byte[1536], 1536);
+//            DatagramPacket p = new DatagramPacket(new byte[8192], 8192);
+            DatagramPacket p = new DatagramPacket(queryBytes, query.length(), srcAddress)
             socket.receive(p);
 
             String s = new String(p.getData());
+            errors.add(parseHeaderValue(s, "LOCATION"));
             try {
               JSONObject device = new JSONObject();
               device.put("USN", parseHeaderValue(s, "USN"));
@@ -192,40 +254,44 @@ public class ssdpPlugin extends Plugin {
 
             addresses.add(p.getAddress().getHostAddress());
           } catch (SocketTimeoutException e) {
-            ret.put("devices", mDeviceList);
-            ret.put("addresses", addresses);
-            ret.put("errors", errors);
-            call.success(ret);
-            return;
-//            break;
+              e.printStackTrace();
+              errors.add("Error socket timeout: " + e.getMessage());
+//            socket.disconnect();
+//            socket.close();
+//            ret.put("devices", mDeviceList);
+//            ret.put("addresses", addresses);
+//            ret.put("errors", errors);
+//            call.success(ret);
+//            return;
+            break;
           }
 
         }
 
       } catch (UnknownHostException e) {
         e.printStackTrace();
-        errors.add("Error Unknown host" + e.getMessage());
-        ret.put("devices", mDeviceList);
-        ret.put("addresses", addresses);
-        ret.put("errors", errors);
-        call.resolve(ret);
+//        errors.add("Error Unknown host" + e.getMessage());
+        call.error("Error Unknown Host");
+
       } catch (IOException e) {
         e.printStackTrace();
-        errors.add("IO Error" + e.getMessage());
-        ret.put("devices", mDeviceList);
-        ret.put("addresses", addresses);
-        ret.put("errors", errors);
-        call.resolve(ret);
+//        errors.add("IO Error" + e.getMessage());
+        call.error("Error IO Exception");
       }
       finally {
         if(socket != null) {
           socket.disconnect();
           socket.close();
         }
+
+        ret.put("devices", mDeviceList);
+        ret.put("addresses", addresses);
+        ret.put("errors", errors);
+        call.resolve(ret);
       }
       lock.release();
-      return;
-    }
+//      return;
+//    }
 
     ret.put("devices", mDeviceList);
     ret.put("addresses", addresses);
