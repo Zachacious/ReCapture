@@ -1,1 +1,5 @@
 // app global css in SCSS form
+.body--dark {
+  background-color: $dark-page;
+  color: $dark-page-text !important;
+}
