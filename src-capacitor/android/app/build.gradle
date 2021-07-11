@@ -34,7 +34,6 @@ dependencies {
     implementation project(':capacitor-cordova-android-plugins')
   implementation 'com.loopj.android:android-async-http:1.4.11'
   implementation 'cz.msebera.android:httpclient:4.5.8'
-  implementation 'com.github.custanator:upnpdiscovery:1.0.1'
 }
 
 apply from: 'capacitor.build.gradle'
