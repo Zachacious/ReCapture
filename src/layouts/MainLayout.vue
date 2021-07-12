@@ -32,6 +32,7 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+    <alert />
   </q-layout>
 </template>
 
@@ -84,9 +85,13 @@
 // ];
 
 import { defineComponent, ref } from "vue";
+import alert from "../components/alert.vue";
 
 export default defineComponent({
   name: "MainLayout",
+  components: {
+    alert,
+  },
 
   // components: {
   //   EssentialLink,

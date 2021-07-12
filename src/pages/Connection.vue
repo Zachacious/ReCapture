@@ -25,6 +25,7 @@
           class="connect-btn q-ma-md q-pa-md q-px-lg"
           color="info"
           label="Connect"
+          @click="connect()"
         />
       </div>
     </div>
@@ -42,6 +43,10 @@ export default defineComponent({
   methods: {
     async connect() {
       let res;
+
+      this.$alert({
+        message: "Test Successful",
+      });
 
       try {
         res = await this.$q.capacitor.Plugins.ssdpPlugin.search({
@@ -61,11 +66,13 @@ export default defineComponent({
       if (!res) {
         //TODO: error
         console.log("Unable to make camera connection!");
+        return;
       }
 
       if (!res.devices) {
         // TODO: error
         console.log("Unable to make camera connection!");
+        return;
       }
 
       const device = res.deviced[0];

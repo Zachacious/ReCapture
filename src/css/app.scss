@@ -1,4 +1,7 @@
 // app global css in SCSS form
+// @import "swal-borderless-theme.scss";
+// @import "~@sweetalert2/theme-borderless/borderless.scss";
+
 .body--dark {
   background-color: $dark-page;
   color: $dark-page-text !important;
