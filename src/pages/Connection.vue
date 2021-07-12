@@ -1,0 +1,88 @@
+<template>
+  <q-page class="flex flex-center">
+    <div class="content-area q-pa-md">
+      <div class="text-h3 text-center text-capitalize q-pb-md">
+        Let's Connect To Your Camera
+      </div>
+      <div class="help-text text-center">
+        <div class="q-pb-md">
+          First enable remote connect on your Sony Camera.<q-btn
+            flat
+            color="info"
+            label="(Click here for help)"
+          />
+        </div>
+        <div class="q-pb-md">
+          Then connect your phone to your camera's Wifi access point.<q-btn
+            flat
+            color="info"
+            label="(Click here for help)"
+          />
+        </div>
+        <div class="q-pb-md">Once done, tap connect.</div>
+        <q-btn
+          outline
+          class="connect-btn q-ma-md q-pa-md q-px-lg"
+          color="info"
+          label="Connect"
+        />
+      </div>
+    </div>
+  </q-page>
+</template>
+
+<script>
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  name: "Connection",
+  data() {
+    return {};
+  },
+  methods: {
+    async connect() {
+      let res;
+
+      try {
+        res = await this.$q.capacitor.Plugins.ssdpPlugin.search({
+          options: {
+            ST: "urn:schemas-sony-com:service:ScalarWebAPI:1",
+            MX: "5",
+            HOST: "239.255.255.250",
+            MAN: "ssdp:discover",
+            PORT: "1900",
+            TIMEOUT: "5000",
+          },
+        });
+      } catch (err) {
+        console.log(`Error trying to SSDP search for devices: ${err}`);
+      }
+
+      if (!res) {
+        //TODO: error
+        console.log("Unable to make camera connection!");
+      }
+
+      if (!res.devices) {
+        // TODO: error
+        console.log("Unable to make camera connection!");
+      }
+
+      const device = res.deviced[0];
+      this.$q.connection.isConnected = true;
+      this.$q.connection.device = device;
+
+      // now connect move to main screen
+      this.$q.router.replace("/");
+
+      console.log(res);
+    },
+  },
+});
+</script>
+
+<style lang="scss" scoped>
+.help-text {
+  font-size: 20px;
+}
+</style>

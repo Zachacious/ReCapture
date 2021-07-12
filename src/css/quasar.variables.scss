@@ -18,9 +18,9 @@ $accent: #9c27b0;
 
 $dark: #1d1d1d;
 
-$positive: #21ba45;
+// $positive: #21ba45;
 $negative: #c10015;
-$info: #31ccec;
+// $info: #31ccec;
 $warning: #f2c037;
 
 // -------------------------------------------
@@ -37,7 +37,11 @@ $air-superiority-blue: #6494aaff;
 $old-lavender: #70566dff;
 $dark-purple: #42273bff;
 $granny-smith-apple: #9ee493ff;
-$nyanza: #eaf9d9ff;
+$nyanza: rgb(219, 233, 203);
 
 $dark-page: $dark-purple;
 $dark-page-text: $nyanza;
+
+$cta-green: $granny-smith-apple;
+$positive: $granny-smith-apple;
+$info: $air-superiority-blue;
