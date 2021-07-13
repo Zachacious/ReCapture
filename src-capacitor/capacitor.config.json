@@ -4,5 +4,16 @@
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",
-  "hideLogs": false
+  "hideLogs": false,
+  "plugins": {
+    "SplashScreen": {
+      "showSpinner": true,
+      "backgroundColor": "#42273bff",
+      "spinnerColor": "6494aaff",
+      "splashFullScreen": true,
+      "splashImmersive": true,
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
 }

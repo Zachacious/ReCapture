@@ -45,7 +45,10 @@ export default defineComponent({
       let res;
 
       this.$alert({
-        message: "Test Successful",
+        title: "Connected",
+        message: "You're all set!",
+        closeBtnText: "Continue",
+        type: "success",
       });
 
       try {
@@ -84,6 +87,10 @@ export default defineComponent({
 
       console.log(res);
     },
+  },
+
+  mounted() {
+    this.$q.capacitor.Plugins.SplashScreen.hide();
   },
 });
 </script>
