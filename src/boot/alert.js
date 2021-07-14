@@ -20,6 +20,7 @@ export default boot(({ app }) => {
   app.config.globalProperties.$alertDelegate = customAlertDelegate;
   app.config.globalProperties.$alert = (options) => {
     customAlertDelegate.open(options);
+    return customAlertDelegate;
   };
 });
 

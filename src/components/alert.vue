@@ -12,7 +12,41 @@
         role="alert"
       >
         <div class="flex flex-center">
-          <div v-if="options.type === 'success'" class="svg-box">
+          <div
+            v-if="options.type === 'loading'"
+            ref="loadingWrapper"
+            class="loader q-mb-md"
+            style="position: relative"
+          >
+            <div class="demo">
+              <div class="circle">
+                <div class="inner"></div>
+              </div>
+              <div class="circle">
+                <div class="inner"></div>
+              </div>
+              <div class="circle">
+                <div class="inner"></div>
+              </div>
+              <div class="circle">
+                <div class="inner"></div>
+              </div>
+              <div class="circle">
+                <div class="inner"></div>
+              </div>
+            </div>
+            <!-- <ul class="c">
+              <li></li>
+              <li></li>
+              <li></li>
+              <li></li>
+              <li></li>
+            </ul> -->
+          </div>
+          <div
+            v-else-if="options.type === 'success' && !options.noIcon"
+            class="svg-box"
+          >
             <svg class="circular green-stroke">
               <circle
                 class="path"
@@ -37,7 +71,10 @@
             </svg>
           </div>
 
-          <div v-else-if="options.type === 'error'" class="svg-box">
+          <div
+            v-else-if="options.type === 'error' && !options.noIcon"
+            class="svg-box"
+          >
             <svg class="circular red-stroke">
               <circle
                 class="path"
@@ -67,7 +104,10 @@
             </svg>
           </div>
           <div
-            v-else-if="options.type === 'warning' || options.type === 'info'"
+            v-else-if="
+              (options.type === 'warning' || options.type === 'info') &&
+              !options.noIcon
+            "
             class="svg-box"
           >
             <svg
@@ -118,12 +158,23 @@
           <div class="title text-h4 text-bold text-center full-width q-mb-sm">
             {{ options.title }}
           </div>
-          <div class="message text-center full-width q-pa-md">
+          <div class="message text-center full-width q-pa-sm q-px-lg">
             {{ options.message }}
           </div>
-          <q-btn color="info" class="close q-ma-md" @click="close">
-            {{ options.closeBtnText }}
-          </q-btn>
+          <div class="buttons">
+            <q-btn
+              v-for="(button, index) in options.buttons"
+              :key="index"
+              :color="button.color"
+              class="close q-ma-md"
+              @click="handleButtonClick(button)"
+            >
+              {{ button.text }}
+            </q-btn>
+          </div>
+          <!-- <q-btn color="info" class="close q-ma-md" @click="close">
+            {{ options.closeBtn }}
+          </q-btn> -->
         </div>
       </div>
     </transition>
@@ -140,10 +191,19 @@ export default defineComponent({
       options: {
         type: "info",
         message: "",
-        dismissable: true,
         title: "",
-        closeBtnText: "Close",
+        buttons: [
+          // {
+          //   text: "OK",
+          //   color: "green",
+          //   action: () => {}
+          //   closesAlert: true
+          // }
+        ],
+        noIcon: false,
+        // quasarLoader: "",
       },
+      defaultOptions: {},
       show: false,
     };
   },
@@ -160,12 +220,22 @@ export default defineComponent({
 
     close() {
       this.show = false;
+      this.options = this.defaultOptions;
+    },
+
+    handleButtonClick(button) {
+      if (button.action) button.action();
+      if (button.closesAlert) this.close();
     },
   },
 
   mounted() {
     this.$alertDelegate.setOpenCB(this.open);
     this.$alertDelegate.setCloseCB(this.close);
+
+    this.defaultOptions = this.options;
+
+    if (this.options.type === "loading") this.options.noIcon = true;
   },
 });
 </script>
@@ -368,5 +438,219 @@ export default defineComponent({
   100% {
     transform: scale(1);
   }
+}
+
+//===================================== spinner =============
+
+// $colors: #6494aaff #6494aaff #6494aaff #6494aaff;
+// $size: 2em; /*change this to resize*/
+
+// @function scale($i) {
+//   @return 0.8em * $i;
+// }
+
+// .c {
+//   list-style: none;
+//   margin: 0;
+//   padding: 0;
+//   position: relative;
+//   width: 5em;
+//   width: scale(5);
+//   transform: translateY(-4em);
+//   li {
+//     position: absolute;
+//     left: 0;
+//     right: 0;
+//     bottom: 0;
+//     top: 0;
+//     margin: auto;
+//     border-radius: 50%;
+//     box-sizing: border-box;
+//     display: flex;
+//     justify-content: center;
+//     align-items: center;
+//     transform-origin: center center;
+//     animation: anim 1s ease-in-out infinite;
+//     will-change: transform, filter;
+//     &:nth-child(1) {
+//       width: scale(1);
+//       height: scale(1);
+//       &:after {
+//         content: "";
+//         display: block;
+//         font-size: 25%;
+//         width: 1em;
+//         height: 1em;
+//         border-radius: 50%;
+//         box-shadow: scale(1) 0 0 rgba(nth($colors, 1), 0.2),
+//           -(scale(1)) 0 0 rgba(nth($colors, 2), 0.2),
+//           0 scale(1) 0 rgba(nth($colors, 3), 0.2),
+//           0 (-(scale(1))) 0 rgba(nth($colors, 4), 0.2);
+//       }
+//     }
+//     &:nth-child(2) {
+//       animation-delay: 0.1s;
+//       width: scale(2);
+//       height: scale(2);
+//       &:after {
+//         content: "";
+//         display: block;
+//         font-size: 50%;
+//         width: 1em;
+//         height: 1em;
+//         border-radius: 50%;
+//         box-shadow: scale(1.5) 0 0 rgba(nth($colors, 1), 0.4),
+//           -(scale(1.5)) 0 0 rgba(nth($colors, 2), 0.4),
+//           0 scale(1.5) 0 rgba(nth($colors, 3), 0.4),
+//           0 (-(scale(1.5))) 0 rgba(nth($colors, 4), 0.4);
+//       }
+//     }
+//     &:nth-child(3) {
+//       animation-delay: 0.15s;
+//       width: scale(3);
+//       height: scale(3);
+//       &:after {
+//         content: "";
+//         display: block;
+//         font-size: 75%;
+//         width: 1em;
+//         height: 1em;
+//         border-radius: 50%;
+//         box-shadow: scale(2) 0 0 rgba(nth($colors, 1), 0.6),
+//           -(scale(2)) 0 0 rgba(nth($colors, 2), 0.6),
+//           0 scale(2) 0 rgba(nth($colors, 3), 0.6),
+//           0 (-(scale(2))) 0 rgba(nth($colors, 4), 0.6);
+//       }
+//     }
+//     &:nth-child(4) {
+//       animation-delay: 0.2s;
+//       width: scale(4);
+//       height: scale(4);
+//       &:after {
+//         content: "";
+//         display: block;
+//         font-size: 100%;
+//         width: 1em;
+//         height: 1em;
+//         border-radius: 50%;
+//         box-shadow: scale(2.5) 0 0 rgba(nth($colors, 1), 0.8),
+//           -(scale(2.5)) 0 0 rgba(nth($colors, 2), 0.8),
+//           0 scale(2.5) 0 rgba(nth($colors, 3), 0.8),
+//           0 (-(scale(2.5))) 0 rgba(nth($colors, 4), 0.8);
+//       }
+//     }
+//     &:nth-child(5) {
+//       animation-delay: 0.25s;
+//       width: scale(5);
+//       height: scale(5);
+//       &:after {
+//         content: "";
+//         display: block;
+//         font-size: 125%;
+//         width: 1em;
+//         height: 1em;
+//         border-radius: 50%;
+//         box-shadow: scale(3) 0 0 nth($colors, 1),
+//           -(scale(3)) 0 0 nth($colors, 2), 0 scale(3) 0 nth($colors, 3),
+//           0 (-(scale(3))) 0 nth($colors, 4);
+//       }
+//     }
+//   }
+// }
+// @keyframes anim {
+//   50% {
+//     filter: blur(2px);
+//   }
+//   90%,
+//   100% {
+//     transform: rotate(1turn);
+//     filter: blur(0);
+//   }
+// }
+
+// html {
+//   font-size: 10px;
+//   height: 100%;
+// }
+// body {
+//   background: #42273bff;
+//   height: 100%;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   font-size: $size;
+// }
+
+/////////////////////////////////////////////////////////////////////
+.demo {
+  width: 100px;
+  height: 102px;
+  border-radius: 100%;
+  position: relative;
+
+  //   top: 20%;
+  //   left: calc(50% - 50px);
+}
+
+.circle {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+.circle .inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 100%;
+  border: 5px solid rgba(100, 148, 170, 0.7);
+  border-right: none;
+  border-top: none;
+  background-clip: padding;
+  box-shadow: inset 0px 0px 10px rgba(100, 148, 170, 0.15);
+}
+
+@-webkit-keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.circle:nth-of-type(0) {
+  transform: rotate(0deg);
+}
+.circle:nth-of-type(0) .inner {
+  -webkit-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear;
+}
+
+.circle:nth-of-type(1) {
+  transform: rotate(70deg);
+}
+.circle:nth-of-type(1) .inner {
+  -webkit-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear;
+}
+
+.circle:nth-of-type(2) {
+  transform: rotate(140deg);
+}
+.circle:nth-of-type(2) .inner {
+  -webkit-animation: spin 2s infinite linear;
+  animation: spin 2s infinite linear;
+}
+
+.demo {
+  -webkit-animation: spin 5s infinite linear;
+  animation: spin 5s infinite linear;
 }
 </style>

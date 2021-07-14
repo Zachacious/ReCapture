@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <div class="content-area q-pa-md">
-      <div class="text-h3 text-center text-capitalize q-pb-md">
+      <div class="text-h3 text-bold text-center text-capitalize q-pb-md">
         Let's Connect To Your Camera
       </div>
       <div class="help-text text-center">
@@ -38,18 +38,33 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "Connection",
   data() {
-    return {};
+    return {
+      alertOptions: {
+        connecting: {
+          type: "loading",
+          title: "Connecting",
+          message: "Please Wait...",
+        },
+        error: {
+          type: "error",
+          message: "",
+          title: "Error",
+          buttons: [
+            {
+              text: "OK",
+              color: "info",
+              closesAlert: true,
+            },
+          ],
+        },
+      },
+    };
   },
   methods: {
     async connect() {
       let res;
 
-      this.$alert({
-        title: "Connected",
-        message: "You're all set!",
-        closeBtnText: "Continue",
-        type: "success",
-      });
+      const connectingAlert = this.$alert(this.alertOptions.connecting);
 
       try {
         res = await this.$q.capacitor.Plugins.ssdpPlugin.search({
@@ -64,17 +79,31 @@ export default defineComponent({
         });
       } catch (err) {
         console.log(`Error trying to SSDP search for devices: ${err}`);
-      }
+        connectingAlert.close();
 
-      if (!res) {
-        //TODO: error
-        console.log("Unable to make camera connection!");
+        this.alertOptions.error.message =
+          "Unable to search for devices. Check your settings and try again.";
+        this.$alert(this.alertOptions.error);
         return;
       }
 
-      if (!res.devices) {
-        // TODO: error
+      if (!res) {
         console.log("Unable to make camera connection!");
+        connectingAlert.close();
+
+        this.alertOptions.error.message =
+          "Unable to connect. Check your settings and try again.";
+        this.$alert(this.alertOptions.error);
+        return;
+      }
+
+      if (res.devices.length === 0) {
+        console.log("Unable to make camera connection!");
+        connectingAlert.close();
+
+        this.alertOptions.error.message =
+          "Unable to connect. Check your settings and try again.";
+        this.$alert(this.alertOptions.error);
         return;
       }
 
@@ -82,10 +111,12 @@ export default defineComponent({
       this.$q.connection.isConnected = true;
       this.$q.connection.device = device;
 
-      // now connect move to main screen
-      this.$q.router.replace("/");
+      connectingAlert.close();
 
       console.log(res);
+
+      // now connect move to main screen
+      this.$q.router.replace("/");
     },
   },
 
