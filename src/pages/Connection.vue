@@ -45,6 +45,18 @@ export default defineComponent({
           title: "Connecting",
           message: "Please Wait...",
         },
+        success: {
+          type: "success",
+          title: "Success",
+          message: "Connected",
+          buttons: [
+            {
+              text: "OK",
+              color: "positive",
+              closesAlert: true,
+            },
+          ],
+        },
         error: {
           type: "error",
           message: "",
@@ -62,6 +74,7 @@ export default defineComponent({
   },
   methods: {
     async connect() {
+      this.$router.replace("/");
       let res;
 
       const connectingAlert = this.$alert(this.alertOptions.connecting);
@@ -107,16 +120,17 @@ export default defineComponent({
         return;
       }
 
-      const device = res.deviced[0];
-      this.$q.connection.isConnected = true;
-      this.$q.connection.device = device;
+      const device = res.devices[0];
+      this.$connection.isConnected = true;
+      this.$connection.device = device;
 
       connectingAlert.close();
+      // now connect move to main screen
+      this.$router.replace("/");
+
+      this.$alert(this.alertOptions.success);
 
       console.log(res);
-
-      // now connect move to main screen
-      this.$q.router.replace("/");
     },
   },
 
