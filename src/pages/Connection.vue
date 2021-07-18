@@ -120,7 +120,7 @@ export default defineComponent({
       }
 
       const device = res.devices[0];
-      this.$connection.setDevice(device);
+      this.$connection.setConnectedDevice(device);
 
       connectingAlert.close();
       // now connect move to main screen
