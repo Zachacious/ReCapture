@@ -74,7 +74,6 @@ export default defineComponent({
   },
   methods: {
     async connect() {
-      this.$router.replace("/");
       let res;
 
       const connectingAlert = this.$alert(this.alertOptions.connecting);
@@ -121,8 +120,7 @@ export default defineComponent({
       }
 
       const device = res.devices[0];
-      this.$connection.isConnected = true;
-      this.$connection.device = device;
+      this.$connection.setDevice(device);
 
       connectingAlert.close();
       // now connect move to main screen

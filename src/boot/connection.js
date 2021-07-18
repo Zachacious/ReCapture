@@ -1,6 +1,7 @@
 import { boot } from "quasar/wrappers";
+import parseXML from "../utils/parseXML";
 
-const textData = {
+const testData = {
   devices: [
     {
       LOCATION: `http://192.168.122.1:61000/scalarwebapi_dd.xml`,
@@ -60,11 +61,60 @@ const textData = {
   ],
 };
 
-const connection = {
+const parseDeviceInfo = (device) => {
+  const { xml } = device;
+
+  const deviceInfo = {
+    name: "",
+    api: {
+      version: "",
+      url: "",
+    },
+  };
+
+  if (!xml) return deviceInfo;
+
+  const xmlDoc = new DOMParser().parseFromString(xml, "text/xml");
+
+  console.log(parseXML(xmlDoc));
+
+  // stringParserXML(xml, (err, result) => {
+  //   if (err) return console.error(err);
+
+  //   deviceInfo.name = result.root.device[0].friendlyName[0];
+  //   deviceInfo.api.version = `${result.root.specVersion[0].major[0]}.${result.root.specVersion[0].minor[0]}`;
+  //   deviceInfo.api.url =
+  //     result.root.device[0]["av:X_ScalarWebAPI_DeviceInfo"][0][
+  //       "av:X_ScalarWebAPI_ServiceList"
+  //     ][0]["av:X_ScalarWebAPI_Service"][0][
+  //       "av:X_ScalarWebAPI_ActionList_URL"
+  //     ][0];
+
+  //   return deviceInfo;
+  // });
+};
+
+let connection = {
   isConnected: false,
   cameraInfo: {},
   device: {},
 };
+
+connection.setDevice = (device) => {
+  try {
+    connection.device = device;
+    connection.isConnected = true;
+    connection.cameraInfo = parseDeviceInfo(device);
+  } catch (err) {
+    console.error(err);
+    connection.isConnected = false;
+    connection.cameraInfo = {};
+    connection.device = {};
+  }
+};
+
+// TODO: remove in live app
+connection.setDevice(testData.devices[0]);
 
 export default boot(({ app }) => {
   app.config.globalProperties.$connection = connection;

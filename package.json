@@ -13,11 +13,11 @@
     "@quasar/cli": "^1.2.1",
     "@quasar/extras": "^1.0.0",
     "core-js": "^3.6.5",
+    "lodash": "^4.17.21",
     "mitt": "^3.0.0",
     "node-polyfill-webpack-plugin": "^1.1.4",
     "quasar": "^2.0.0",
-    "vuex": "^4.0.1",
-    "xml2js": "^0.4.23"
+    "vuex": "^4.0.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
