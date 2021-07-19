@@ -12,15 +12,15 @@ capture.initSession = async () => {
   const beginCaptureSession = await sony.beginCaptureSession();
   const liveView = await sony.startLiveView();
 
-  if (!liveView.data || liveView.error) return liveView;
-
   // should containe endpoint for liveview image
-  return liveView.data;
+  return liveView;
 };
 
 capture.endSession = async () => {
   const endLiveView = await sony.endLiveView();
   const endCaptureSession = await sony.endCaptureSession();
+
+  return makeReturnData({ result: "passthrough" }, "");
 };
 
 export default capture;

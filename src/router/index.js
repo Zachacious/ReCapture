@@ -6,7 +6,7 @@ import {
   createWebHashHistory,
 } from "vue-router";
 import routes from "./routes";
-import { connection } from "../boot/connection";
+import connection from "../utils/connection";
 
 /*
  * If not building with SSR mode, you can

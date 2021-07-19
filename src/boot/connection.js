@@ -1,7 +1,8 @@
 import { boot } from "quasar/wrappers";
-import parseXML from "../utils/parseXML";
-import events from "../utils/events";
-import { fetchy } from "../utils/fetchy";
+// import parseXML from "../utils/parseXML";
+// import events from "../utils/events";
+// import { fetchy } from "../utils/fetchy";
+import connection from "../utils/connection";
 
 const testData = {
   devices: [
@@ -63,74 +64,71 @@ const testData = {
   ],
 };
 
-let connection = {
-  isConnected: false,
-  data: {},
-  endpoint: "",
-};
+// let connection = {
+//   isConnected: false,
+//   data: {},
+//   endpoint: "",
+// };
 
-connection.setDisconnected = () => {
-  connection.isConnected = false;
-  connection.data = {};
-  connection.endpoint = "";
-  events.emit(`connection.disconnected`);
-};
+// connection.setDisconnected = () => {
+//   connection.isConnected = false;
+//   connection.data = {};
+//   connection.endpoint = "";
+//   events.emit(`connection.disconnected`);
+// };
 
-connection.setConnectedDevice = (device) => {
-  try {
-    const { xml } = device;
-    if (!xml) return;
+// connection.setConnectedDevice = (device) => {
+//   try {
+//     const { xml } = device;
+//     if (!xml) return;
 
-    const xmlDoc = new DOMParser().parseFromString(xml, "text/xml");
-    const deviceInfo = parseXML(xmlDoc);
+//     const xmlDoc = new DOMParser().parseFromString(xml, "text/xml");
+//     const deviceInfo = parseXML(xmlDoc);
 
-    connection.data = deviceInfo;
-    connection.isConnected = true;
+//     connection.data = deviceInfo;
+//     connection.isConnected = true;
 
-    try {
-      connection.endpoint =
-        connection.data.device["av:X_ScalarWebAPI_DeviceInfo"][
-          "av:X_ScalarWebAPI_ServiceList"
-        ][0]["av:X_ScalarWebAPI_ActionList_URL"];
-    } catch (err) {
-      console.log(
-        "Unable to retrieve camera endpoint... possible disconnected"
-      );
-      console.error(err);
-      connection.setDisconnected();
-      return;
-    }
-  } catch (err) {
-    console.error(err);
-    connection.setDisconnected();
-  }
-};
+//     try {
+//       connection.endpoint =
+//         connection.data.device["av:X_ScalarWebAPI_DeviceInfo"][
+//           "av:X_ScalarWebAPI_ServiceList"
+//         ][0]["av:X_ScalarWebAPI_ActionList_URL"];
+//     } catch (err) {
+//       console.log(
+//         "Unable to retrieve camera endpoint... possible disconnected"
+//       );
+//       console.error(err);
+//       connection.setDisconnected();
+//       return;
+//     }
+//   } catch (err) {
+//     console.error(err);
+//     connection.setDisconnected();
+//   }
+// };
 
-connection.makeAPICall = async (body) => {
-  try {
-    const res = await fetchy.POST({
-      url: `${endpoint}/camera`,
-      retries: 3,
-      retryDelay: 250,
-      http: {
-        body: JSON.stringify(body),
-      },
-    });
+// connection.makeAPICall = async (body) => {
+//   try {
+//     const res = await fetchy.POST({
+//       url: `${endpoint}/camera`,
+//       retries: 3,
+//       retryDelay: 250,
+//       http: {
+//         body: JSON.stringify(body),
+//       },
+//     });
 
-    const jsonres = await res.json();
-    return jsonres;
-  } catch (err) {
-    console.log(err);
-    connection.setDisconnected();
-  }
-};
+//     const jsonres = await res.json();
+//     return jsonres;
+//   } catch (err) {
+//     console.log(err);
+//     connection.setDisconnected();
+//   }
+// };
 
 // TODO: remove in live app
 connection.setConnectedDevice(testData.devices[0]);
-console.log(connection);
 
 export default boot(({ app }) => {
   app.config.globalProperties.$connection = connection;
 });
-
-export { connection };

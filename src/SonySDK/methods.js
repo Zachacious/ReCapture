@@ -1,5 +1,6 @@
 import bodies from "./apiBodies";
-import connection from "../boot/connection";
+import connection from "../utils/connection";
+// import events from "../utils/events";
 
 const makeReturnData = (data, error) => {
   return { data: data, error: error };
@@ -15,7 +16,6 @@ sony.getAvailableMethods = async () => {
     calls = calls.result[0];
     return makeReturnData(calls, null);
   } catch (err) {
-    console.error(err);
     return makeReturnData(null, err);
   }
 };
@@ -64,11 +64,16 @@ sony.getEvent = async () => {
 
   try {
     res = await connection.makeAPICall(bodies.getEvent);
-    return makeReturnData(res, null);
+    return makeReturnData(res, res ? null : "Unable to get event");
   } catch (err) {
     console.error(err);
     return makeReturnData(null, err);
   }
+};
+
+sony.checkConnection = async () => {
+  const res = await sony.getEvent();
+  if (res.error || !res.data) connection.setDisconnected();
 };
 
 sony.getEventProperty = async (prop, events) => {
@@ -84,11 +89,17 @@ sony.getEventProperty = async (prop, events) => {
 
 sony.getCameraStatus = async () => {
   const camEvents = await sony.getEvent();
-  if (camEvents.error) return camEvents;
+  if (camEvents.error || !camEvents.data) return camEvents;
 
-  const camStatus = await sony.getEventProperty("cameraStatus", camEvents.data);
+  const camStatus = await sony.getEventProperty(
+    "cameraStatus",
+    camEvents.data.result
+  );
 
-  return makeReturnData(camStatus, null);
+  return makeReturnData(
+    camStatus,
+    camStatus ? null : "Unable to get camera status"
+  );
 };
 
 sony.startLiveView = async () => {
@@ -117,7 +128,7 @@ sony.startLiveView = async () => {
 
 sony.endLiveView = async () => {
   const camStatus = await sony.getCameraStatus();
-  if (camStatus.error) return camStatus;
+  if (camStatus.error || !camStatus.data) return camStatus;
   if (camStatus.data.status !== "idle") {
     return makeReturnData(null, "Camera is not idle");
   }

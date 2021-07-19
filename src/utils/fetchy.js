@@ -9,27 +9,27 @@ const defaultOptions = {
 
 const fetchy = async (options = defaultOptions) => {
   options = { ...defaultOptions, ...options };
-  let response = null;
-  let retries = 0;
 
-  while (retries < options.retries) {
-    try {
-      response = await fetch(options.url, options.http);
-      const data = await response.json();
-      return data;
-    } catch (e) {
-      if (options.retryDelay > 0) {
-        await sleep(options.retryDelay);
+  let res;
+  let retries = options.retries;
+  const retryDelay = options.retryDelay;
+
+  return new Promise(async (resolve, reject) => {
+    for (let i = 0; i < retries; ++i) {
+      try {
+        res = await fetch(options.url, options.http);
+        return resolve(res);
+      } catch (err) {
+        const isLastAttempt = i + 1 === retries;
+        if (isLastAttempt) {
+          console.error(`Fetch failed after ${retries} tries.`);
+          return reject(err);
+        }
+
+        if (retryDelay > 0) await sleep(retryDelay);
       }
-      retries++;
     }
-  }
-
-  if (retries >= options.retries) {
-    throw new Error(`Fetch failed after ${retries} retries`);
-  }
-
-  return response;
+  });
 };
 
 fetchy.GET = (options = defaultOptions) => {

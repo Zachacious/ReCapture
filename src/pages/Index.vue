@@ -50,6 +50,7 @@
 import { defineComponent } from "vue";
 import capture from "../SonySDK/modes/capture";
 import methodRetry from "../utils/methodRetry";
+import sony from "../SonySDK/methods";
 
 export default defineComponent({
   name: "PageIndex",
@@ -76,13 +77,15 @@ export default defineComponent({
     async changedTab(newVal, oldVal) {
       if (newVal === oldVal) return;
 
+      await sony.checkConnection();
+
       if (oldVal === "capture") {
-        await methodRetry(capture.endSession(), 3, 250);
+        await methodRetry(capture.endSession, 3, 250);
       }
 
       if (newVal === "capture") {
         this.capture.error = "";
-        const sessionStatus = await methodRetry(capture.startSession(), 3, 250);
+        const sessionStatus = await methodRetry(capture.initSession, 3, 250);
         if (!sessionStatus.data) {
           this.capture.error = "Unable to start capture session";
           return;
@@ -91,15 +94,27 @@ export default defineComponent({
         console.log(this.liveViewURL);
       }
     },
+
+    async cleanup() {
+      await methodRetry(capture.endSession, 3, 250);
+    },
   },
 
   async beforeUpdate() {
     this.adjustFullScreenTabs();
   },
 
+  async beforeUnmount() {
+    await this.cleanup();
+  },
+
   async mounted() {
     this.$q.capacitor.Plugins.SplashScreen.hide();
     this.adjustFullScreenTabs();
+
+    this.$events.on("connection.disconnected", async () =>
+      this.$router.replace("/connection")
+    );
   },
 });
 </script>
