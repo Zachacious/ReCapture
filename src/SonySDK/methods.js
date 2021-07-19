@@ -20,12 +20,11 @@ sony.getAvailableMethods = async () => {
   }
 };
 
+// not every camera needs this
 sony.beginCaptureSession = async () => {
   const calls = await sony.getAvailableMethods();
 
-  if (calls.error) {
-    return calls;
-  }
+  if (calls.error) return calls;
 
   if (!calls.data.includes("startRecMode")) {
     return makeReturnData(null, "Error start record mode not available");
@@ -44,9 +43,7 @@ sony.beginCaptureSession = async () => {
 sony.endCaptureSession = async () => {
   const calls = await sony.getAvailableMethods();
 
-  if (calls.error) {
-    return calls;
-  }
+  if (calls.error) return calls;
 
   if (!calls.data.includes("stopRecMode")) {
     return makeReturnData(null, "Error stop record mode not available");
@@ -87,11 +84,57 @@ sony.getEventProperty = async (prop, events) => {
 
 sony.getCameraStatus = async () => {
   const camEvents = await sony.getEvent();
-  if (camEvents.error) {
-    return camEvents;
+  if (camEvents.error) return camEvents;
+
+  const camStatus = await sony.getEventProperty("cameraStatus", camEvents.data);
+
+  return makeReturnData(camStatus, null);
+};
+
+sony.startLiveView = async () => {
+  const camStatus = await sony.getCameraStatus();
+  if (camStatus.error) return camStatus;
+  if (camStatus.data.status !== "idle") {
+    return makeReturnData(null, "Camera is not idle");
   }
 
-  const camStatus = sony.getEventProperty("cameraStatus", camEvents.data);
+  const calls = await sony.getAvailableMethods();
+  if (calls.error) return calls;
 
-  return camStatus;
+  if (!calls.data.includes("startLiveView")) {
+    return makeReturnData(null, "Error start live view not available");
+  }
+
+  try {
+    const res = await connection.makeAPICall(bodies.startLiveview);
+    const success = res.result[0];
+    return makeReturnData(res, !success ? "Unable to start live view" : null);
+  } catch (err) {
+    console.log(err);
+    return makeReturnData(null, err);
+  }
+};
+
+sony.endLiveView = async () => {
+  const camStatus = await sony.getCameraStatus();
+  if (camStatus.error) return camStatus;
+  if (camStatus.data.status !== "idle") {
+    return makeReturnData(null, "Camera is not idle");
+  }
+
+  const calls = await sony.getAvailableMethods();
+  if (calls.error) return calls;
+
+  if (!calls.data.includes("endLiveview")) {
+    return makeReturnData(null, "Error end live view not available");
+  }
+
+  try {
+    const res = await connection.makeAPICall(bodies.startLiveview);
+    const success = res.result[0];
+    return makeReturnData(res, !success ? "Unable to end live view" : null);
+  } catch (err) {
+    console.log(err);
+    return makeReturnData(null, err);
+  }
 };

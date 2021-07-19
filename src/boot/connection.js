@@ -1,6 +1,7 @@
 import { boot } from "quasar/wrappers";
 import parseXML from "../utils/parseXML";
 import events from "../utils/events";
+import { fetchy } from "../utils/fetchy";
 
 const testData = {
   devices: [
@@ -107,10 +108,15 @@ connection.setConnectedDevice = (device) => {
 
 connection.makeAPICall = async (body) => {
   try {
-    const res = await fetch(`${endpoint}/camera`, {
-      method: "POST",
-      body: JSON.stringify(body),
+    const res = await fetchy.POST({
+      url: `${endpoint}/camera`,
+      retries: 3,
+      retryDelay: 250,
+      http: {
+        body: JSON.stringify(body),
+      },
     });
+
     const jsonres = await res.json();
     return jsonres;
   } catch (err) {
