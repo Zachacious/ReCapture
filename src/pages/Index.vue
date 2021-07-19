@@ -5,6 +5,7 @@
         v-model="tab"
         animated
         class="tab-panels full-width bg-repurple"
+        @before-transition="(newVal, oldVal) => changedTab(newVal, oldVal)"
       >
         <q-tab-panel name="capture" class="tab-panel-area">
           <div class="text-h6">Mails</div>
@@ -47,6 +48,7 @@
 
 <script>
 import { defineComponent } from "vue";
+import capture from "../SonySDK/modes/capture";
 
 export default defineComponent({
   name: "PageIndex",
@@ -63,6 +65,18 @@ export default defineComponent({
       const tabpanel = document.querySelector(".tab-panels");
       if (header && tabbar && tabpanel) {
         tabpanel.style.height = `calc(100% - ${header.offsetHeight}px)`;
+      }
+    },
+
+    async changedTab(newVal, oldVal) {
+      if (newVal === oldVal) return;
+
+      if (oldVal === "capture") {
+        await capture.endSession();
+      }
+
+      if (newVal === "capture") {
+        await capture.startSession();
       }
     },
   },

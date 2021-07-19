@@ -1,20 +1,5 @@
 import sleep from "./sleep";
 
-const cache = {
-  // {uid: 'sdfsdf', interval: null}
-  data: [],
-};
-
-cache.add = (uid, interval) => {
-  cache.data.push({ uid: uid, interval: interval });
-};
-
-cache.remove = (uid) => {
-  const cacheItem = cache.data.find((item) => item.uid === uid);
-  if (cacheItem) clearInterval(cacheItem.interval);
-  cache.data = cache.data.filter((item) => item.uid !== uid);
-};
-
 const defaultOptions = {
   url: "",
   retries: 1,

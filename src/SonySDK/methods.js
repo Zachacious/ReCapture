@@ -138,3 +138,5 @@ sony.endLiveView = async () => {
     return makeReturnData(null, err);
   }
 };
+
+export default sony;
