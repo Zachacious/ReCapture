@@ -49,12 +49,17 @@
 <script>
 import { defineComponent } from "vue";
 import capture from "../SonySDK/modes/capture";
+import methodRetry from "../utils/methodRetry";
 
 export default defineComponent({
   name: "PageIndex",
   data() {
     return {
       tab: "capture",
+      capture: {
+        liveViewURL: "",
+        error: "",
+      },
       value: "",
     };
   },
@@ -72,11 +77,18 @@ export default defineComponent({
       if (newVal === oldVal) return;
 
       if (oldVal === "capture") {
-        await capture.endSession();
+        await methodRetry(capture.endSession(), 3, 250);
       }
 
       if (newVal === "capture") {
-        await capture.startSession();
+        this.capture.error = "";
+        const sessionStatus = await methodRetry(capture.startSession(), 3, 250);
+        if (!sessionStatus.data) {
+          this.capture.error = "Unable to start capture session";
+          return;
+        }
+        this.liveViewURL = sessionStatus.data;
+        console.log(this.liveViewURL);
       }
     },
   },
