@@ -4,8 +4,8 @@
       <q-toolbar class="header-bar">
         <img src="logo.png" class="logo" />
         <q-space />
-        <span class="flex flex-center text-bold ellipsis"
-          >Camera: {{ cameraName }}</span
+        <span class="flex flex-center text-bold ellipsis text-rewhite">
+          SONY {{ cameraName }}</span
         >
       </q-toolbar>
     </q-header>
@@ -37,10 +37,6 @@ export default defineComponent({
       cameraName: this.$connection.data.device.friendlyName,
     };
   },
-
-  // mounted() {
-  //   console.log(this.$connection);
-  // },
 });
 </script>
 

@@ -62,7 +62,6 @@ export default defineComponent({
       const tabbar = document.querySelector(".tabbar");
       const tabpanel = document.querySelector(".tab-panels");
       if (header && tabbar && tabpanel) {
-        console.log("here");
         tabpanel.style.height = `calc(100% - ${header.offsetHeight}px)`;
       }
     },
@@ -89,6 +88,6 @@ export default defineComponent({
 }
 
 .tab-button-holder {
-  border-top: 1px solid $old-lavendar;
+  border-top: 1px solid $old-lavender;
 }
 </style>

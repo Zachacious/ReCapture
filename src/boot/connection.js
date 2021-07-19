@@ -1,5 +1,6 @@
 import { boot } from "quasar/wrappers";
 import parseXML from "../utils/parseXML";
+import events from "../utils/events";
 
 const testData = {
   devices: [
@@ -64,6 +65,14 @@ const testData = {
 let connection = {
   isConnected: false,
   data: {},
+  endpoint: "",
+};
+
+connection.setDisconnected = () => {
+  connection.isConnected = false;
+  connection.data = {};
+  connection.endpoint = "";
+  events.emit(`connection.disconnected`);
 };
 
 connection.setConnectedDevice = (device) => {
@@ -76,15 +85,43 @@ connection.setConnectedDevice = (device) => {
 
     connection.data = deviceInfo;
     connection.isConnected = true;
+
+    try {
+      connection.endpoint =
+        connection.data.device["av:X_ScalarWebAPI_DeviceInfo"][
+          "av:X_ScalarWebAPI_ServiceList"
+        ][0]["av:X_ScalarWebAPI_ActionList_URL"];
+    } catch (err) {
+      console.log(
+        "Unable to retrieve camera endpoint... possible disconnected"
+      );
+      console.error(err);
+      connection.setDisconnected();
+      return;
+    }
   } catch (err) {
     console.error(err);
-    connection.isConnected = false;
-    connection.data = {};
+    connection.setDisconnected();
+  }
+};
+
+connection.makeAPICall = async (body) => {
+  try {
+    const res = await fetch(`${endpoint}/camera`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    const jsonres = await res.json();
+    return jsonres;
+  } catch (err) {
+    console.log(err);
+    connection.setDisconnected();
   }
 };
 
 // TODO: remove in live app
 connection.setConnectedDevice(testData.devices[0]);
+console.log(connection);
 
 export default boot(({ app }) => {
   app.config.globalProperties.$connection = connection;
