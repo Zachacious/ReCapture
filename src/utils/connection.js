@@ -55,10 +55,7 @@ connection.makeAPICall = async (body) => {
         data: body,
       },
     });
-    // console.log(res);
 
-    // const jsonres = await res.json();
-    // console.log(jsonres);
     return res.data.result;
   } catch (err) {
     console.error("failed to make camera api call");

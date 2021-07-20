@@ -9,6 +9,7 @@ const makeReturnData = (data, error) => {
 let sony = {};
 
 sony.getAvailableMethods = async () => {
+  console.log("get available methods");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
 
   let calls;
@@ -24,6 +25,7 @@ sony.getAvailableMethods = async () => {
 
 // not every camera needs this
 sony.beginCaptureSession = async () => {
+  console.log("begin capature session");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
 
   const calls = await sony.getAvailableMethods();
@@ -45,6 +47,7 @@ sony.beginCaptureSession = async () => {
 };
 
 sony.endCaptureSession = async () => {
+  console.log("end capture session");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
 
   const calls = await sony.getAvailableMethods();
@@ -65,6 +68,7 @@ sony.endCaptureSession = async () => {
 };
 
 sony.getEvent = async () => {
+  console.log("get event");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
 
   let res;
@@ -79,6 +83,7 @@ sony.getEvent = async () => {
 };
 
 sony.checkConnection = async () => {
+  console.log("check connection");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
 
   const res = await sony.getEvent();
@@ -98,6 +103,7 @@ sony.getEventProperty = async (prop, events) => {
 };
 
 sony.getCameraStatus = async () => {
+  console.log("get camera status");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
 
   const camEvents = await sony.getEvent();
@@ -112,24 +118,19 @@ sony.getCameraStatus = async () => {
 };
 
 sony.startLiveView = async () => {
+  console.log("start live view");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
-
-  const camStatus = await sony.getCameraStatus();
-  if (camStatus.error) return camStatus;
-  if (camStatus.data.status !== "idle") {
-    return makeReturnData(null, "Camera is not idle");
-  }
 
   const calls = await sony.getAvailableMethods();
   if (calls.error) return calls;
 
-  if (!calls.data.includes("startLiveView")) {
+  if (!calls.data.includes("startLiveview")) {
     return makeReturnData(null, "Error start live view not available");
   }
 
   try {
     const res = await connection.makeAPICall(bodies.startLiveview);
-    const success = res.result[0];
+    const success = res[0];
     return makeReturnData(res, !success ? "Unable to start live view" : null);
   } catch (err) {
     console.log(err);
@@ -138,14 +139,8 @@ sony.startLiveView = async () => {
 };
 
 sony.endLiveView = async () => {
+  console.log("end live view");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
-
-  const camStatus = await sony.getCameraStatus();
-  console.log(camStatus);
-  if (camStatus.error || !camStatus.data) return camStatus;
-  if (camStatus.data.cameraStatus !== "idle") {
-    return makeReturnData(null, "Camera is not idle");
-  }
 
   const calls = await sony.getAvailableMethods();
   if (calls.error) return calls;
@@ -156,7 +151,7 @@ sony.endLiveView = async () => {
 
   try {
     const res = await connection.makeAPICall(bodies.startLiveview);
-    const success = res.result[0];
+    const success = res[0];
     return makeReturnData(res, !success ? "Unable to end live view" : null);
   } catch (err) {
     console.log(err);
