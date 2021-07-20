@@ -69,7 +69,7 @@ sony.endCaptureSession = async () => {
 
 sony.getEvent = async () => {
   console.log("get event");
-  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+  //   if (!connection.isConnected) return makeReturnData(null, "Not connected");
 
   let res;
 
@@ -87,8 +87,10 @@ sony.checkConnection = async () => {
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
 
   const res = await sony.getEvent();
+  const status = !res.error && res.data ? true : false;
   console.log(!res.error && res.data ? "Connection GOOD!" : "Connection BAD!");
-  if (res.error || !res.data) connection.setDisconnected();
+  if (!status) connection.setDisconnected();
+  return makeReturnData(status, null);
 };
 
 sony.getEventProperty = async (prop, events) => {

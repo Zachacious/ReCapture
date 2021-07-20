@@ -54,6 +54,7 @@ export default defineComponent({
               text: "OK",
               color: "positive",
               closesAlert: true,
+              action: () => this.$router.replace("/"),
             },
           ],
         },
@@ -124,7 +125,7 @@ export default defineComponent({
 
       connectingAlert.close();
       // now connect move to main screen
-      this.$router.replace("/");
+      // this.$router.replace("/");
 
       this.$alert(this.alertOptions.success);
 

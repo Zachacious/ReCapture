@@ -8,8 +8,7 @@
         @before-transition="(newVal, oldVal) => changedTab(newVal, oldVal)"
       >
         <q-tab-panel name="capture" class="tab-panel-area">
-          <div class="text-h6">Mails</div>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          <CaptureMode />
         </q-tab-panel>
 
         <q-tab-panel name="playback">
@@ -51,9 +50,13 @@ import { defineComponent } from "vue";
 import capture from "../SonySDK/modes/capture";
 import methodRetry from "../utils/methodRetry";
 import sony from "../SonySDK/methods";
+import CaptureMode from "../components/modes/Capture.vue";
 
 export default defineComponent({
   name: "PageIndex",
+  components: {
+    CaptureMode,
+  },
   data() {
     return {
       tab: "capture",
@@ -82,42 +85,37 @@ export default defineComponent({
     },
 
     async changedTab(newVal, oldVal) {
-      if (newVal === oldVal) return;
-
-      const loadingAlert = this.$alert(this.alertOptions.tabLoading);
-
-      await sony.checkConnection();
-
-      if (oldVal === "capture") {
-        await methodRetry(capture.endSession, 3, 250);
-      }
-
-      if (newVal === "capture") {
-        this.capture.error = "";
-        const sessionStatus = await methodRetry(capture.initSession, 3, 250);
-        if (!sessionStatus.data) {
-          this.capture.error = "Unable to start capture session";
-          loadingAlert.close();
-          return;
-        }
-        this.liveViewURL = sessionStatus.data;
-      }
-
-      loadingAlert.close();
+      // if (newVal === oldVal) return;
+      // const loadingAlert = this.$alert(this.alertOptions.tabLoading);
+      // await sony.checkConnection();
+      // if (oldVal === "capture") {
+      //   await methodRetry(capture.endSession, 3, 250);
+      // }
+      // if (newVal === "capture") {
+      //   this.capture.error = "";
+      //   const sessionStatus = await methodRetry(capture.initSession, 3, 250);
+      //   if (!sessionStatus.data) {
+      //     this.capture.error = "Unable to start capture session";
+      //     loadingAlert.close();
+      //     return;
+      //   }
+      //   this.liveViewURL = sessionStatus.data;
+      // }
+      // loadingAlert.close();
     },
 
-    async cleanup() {
-      await methodRetry(capture.endSession, 3, 250);
-    },
+    // async cleanup() {
+    //   await methodRetry(capture.endSession, 3, 250);
+    // },
   },
 
   async beforeUpdate() {
     this.adjustFullScreenTabs();
   },
 
-  async beforeUnmount() {
-    await this.cleanup();
-  },
+  // async beforeUnmount() {
+  //   await this.cleanup();
+  // },
 
   async mounted() {
     this.$q.capacitor.Plugins.SplashScreen.hide();
