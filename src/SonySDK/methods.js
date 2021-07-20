@@ -9,11 +9,13 @@ const makeReturnData = (data, error) => {
 let sony = {};
 
 sony.getAvailableMethods = async () => {
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
   let calls;
 
   try {
     calls = await connection.makeAPICall(bodies.getAvailableApiList);
-    calls = calls.result[0];
+    calls = calls[0];
     return makeReturnData(calls, null);
   } catch (err) {
     return makeReturnData(null, err);
@@ -22,6 +24,8 @@ sony.getAvailableMethods = async () => {
 
 // not every camera needs this
 sony.beginCaptureSession = async () => {
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
   const calls = await sony.getAvailableMethods();
 
   if (calls.error) return calls;
@@ -31,8 +35,8 @@ sony.beginCaptureSession = async () => {
   }
 
   try {
-    res = await connection.makeAPICall(bodies.startRecMode);
-    const success = res.result[0] === 0;
+    const res = await connection.makeAPICall(bodies.startRecMode);
+    const success = res[0] === 0;
     return makeReturnData(res, !success ? "Unable to start record mode" : null);
   } catch (err) {
     console.error(err);
@@ -41,17 +45,18 @@ sony.beginCaptureSession = async () => {
 };
 
 sony.endCaptureSession = async () => {
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
   const calls = await sony.getAvailableMethods();
 
   if (calls.error) return calls;
-
   if (!calls.data.includes("stopRecMode")) {
     return makeReturnData(null, "Error stop record mode not available");
   }
 
   try {
-    res = await connection.makeAPICall(bodies.stopRecMode);
-    const success = res.result[0] === 0;
+    const res = await connection.makeAPICall(bodies.stopRecMode);
+    const success = res[0] === 0;
     return makeReturnData(res, !success ? "Unable to stop record mode" : null);
   } catch (err) {
     console.error(err);
@@ -60,6 +65,8 @@ sony.endCaptureSession = async () => {
 };
 
 sony.getEvent = async () => {
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
   let res;
 
   try {
@@ -72,7 +79,10 @@ sony.getEvent = async () => {
 };
 
 sony.checkConnection = async () => {
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
   const res = await sony.getEvent();
+  console.log(!res.error && res.data ? "Connection GOOD!" : "Connection BAD!");
   if (res.error || !res.data) connection.setDisconnected();
 };
 
@@ -88,13 +98,12 @@ sony.getEventProperty = async (prop, events) => {
 };
 
 sony.getCameraStatus = async () => {
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
   const camEvents = await sony.getEvent();
   if (camEvents.error || !camEvents.data) return camEvents;
 
-  const camStatus = await sony.getEventProperty(
-    "cameraStatus",
-    camEvents.data.result
-  );
+  const camStatus = await sony.getEventProperty("cameraStatus", camEvents.data);
 
   return makeReturnData(
     camStatus,
@@ -103,6 +112,8 @@ sony.getCameraStatus = async () => {
 };
 
 sony.startLiveView = async () => {
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
   const camStatus = await sony.getCameraStatus();
   if (camStatus.error) return camStatus;
   if (camStatus.data.status !== "idle") {
@@ -127,9 +138,12 @@ sony.startLiveView = async () => {
 };
 
 sony.endLiveView = async () => {
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
   const camStatus = await sony.getCameraStatus();
+  console.log(camStatus);
   if (camStatus.error || !camStatus.data) return camStatus;
-  if (camStatus.data.status !== "idle") {
+  if (camStatus.data.cameraStatus !== "idle") {
     return makeReturnData(null, "Camera is not idle");
   }
 

@@ -48,16 +48,18 @@ connection.setConnectedDevice = (device) => {
 connection.makeAPICall = async (body) => {
   try {
     const res = await fetchy.POST({
-      url: `${connection.endpoint}/camera`,
       retries: 3,
       retryDelay: 250,
       http: {
-        body: JSON.stringify(body),
+        url: `${connection.endpoint}/camera`,
+        data: body,
       },
     });
+    // console.log(res);
 
-    const jsonres = await res.json();
-    return jsonres;
+    // const jsonres = await res.json();
+    // console.log(jsonres);
+    return res.data.result;
   } catch (err) {
     console.error("failed to make camera api call");
   }

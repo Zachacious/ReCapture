@@ -4,10 +4,9 @@ import android.os.Bundle;
 
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.Plugin;
+import com.getcapacitor.plugin.http.Http;
 
 import java.util.ArrayList;
-
-//import com.zachmoore.app.recapture.ssdpPlugin;
 
 public class MainActivity extends BridgeActivity {
   @Override
@@ -19,6 +18,7 @@ public class MainActivity extends BridgeActivity {
       // Additional plugins you've installed go here
       // Ex: add(TotallyAwesomePlugin.class);
       add(ssdpPlugin.class);
+      add(Http.class);
     }});
   }
 }

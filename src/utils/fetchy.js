@@ -1,14 +1,41 @@
 import sleep from "./sleep";
+import "@capacitor-community/http";
+import { Plugins } from "@capacitor/core";
 
 const defaultOptions = {
-  url: "",
   retries: 1,
   retryDelay: -1,
-  http: {},
+  http: {
+    url: "",
+    method: "GET",
+    data: null,
+  },
 };
+
+// const httpFetch = async (options) => {
+//   switch (options.method) {
+//     case "GET":
+//       return await Http.get(options.http);
+//     case "POST":
+//       return await Http.post(options.http);
+//     case "PUT":
+//       return await Http.put(options.http);
+//     case "DELETE":
+//       return await Http.delete(options.http);
+//     case "HEAD":
+//       return await Http.head(options.http);
+//     case "OPTIONS":
+//       return await Http.options(options.http);
+//     case "PATCH":
+//       return await Http.patch(options.http);
+//     default:
+//       throw new Error(`Unsupported HTTP method: ${options.method}`);
+//   }
+// };
 
 const fetchy = async (options = defaultOptions) => {
   options = { ...defaultOptions, ...options };
+  // console.log(options);
 
   let res;
   let retries = options.retries;
@@ -17,9 +44,14 @@ const fetchy = async (options = defaultOptions) => {
   return new Promise(async (resolve, reject) => {
     for (let i = 0; i < retries; ++i) {
       try {
-        res = await fetch(options.url, options.http);
+        const { Http } = Plugins;
+        res = await Http.request(options.http);
+        console.log("res: ", res);
+        if (!res.data.id === 1 && !res.data.id === 0)
+          throw new Error(res.data.result);
         return resolve(res);
       } catch (err) {
+        console.log(err);
         const isLastAttempt = i + 1 === retries;
         if (isLastAttempt) {
           console.error(`Fetch failed after ${retries} tries.`);
