@@ -62,6 +62,13 @@ export default defineComponent({
         error: "",
       },
       value: "",
+      alertOptions: {
+        tabLoading: {
+          type: "loading",
+          title: "Loading",
+          message: "Please Wait...",
+        },
+      },
     };
   },
   methods: {
@@ -77,6 +84,8 @@ export default defineComponent({
     async changedTab(newVal, oldVal) {
       if (newVal === oldVal) return;
 
+      const loadingAlert = this.$alert(this.alertOptions.tabLoading);
+
       await sony.checkConnection();
 
       if (oldVal === "capture") {
@@ -88,11 +97,13 @@ export default defineComponent({
         const sessionStatus = await methodRetry(capture.initSession, 3, 250);
         if (!sessionStatus.data) {
           this.capture.error = "Unable to start capture session";
+          loadingAlert.close();
           return;
         }
         this.liveViewURL = sessionStatus.data;
-        console.log(this.liveViewURL);
       }
+
+      loadingAlert.close();
     },
 
     async cleanup() {
