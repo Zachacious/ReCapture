@@ -243,7 +243,7 @@ export default defineComponent({
 <style lang="scss">
 .alert {
   position: absolute;
-  z-index: 10000;
+  z-index: 100000;
   left: 0;
   top: 0;
   width: 100%;

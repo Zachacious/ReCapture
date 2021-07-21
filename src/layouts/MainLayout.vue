@@ -13,18 +13,18 @@
     <q-page-container>
       <router-view />
     </q-page-container>
-    <alert />
+    <!-- <alert /> -->
   </q-layout>
 </template>
 
 <script>
 import { defineComponent, ref } from "vue";
-import alert from "../components/alert.vue";
+// import alert from "../components/alert.vue";
 
 export default defineComponent({
   name: "MainLayout",
   components: {
-    alert,
+    // alert,
   },
 
   setup() {

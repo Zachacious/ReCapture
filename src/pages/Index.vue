@@ -47,9 +47,9 @@
 
 <script>
 import { defineComponent } from "vue";
-import capture from "../SonySDK/modes/capture";
-import methodRetry from "../utils/methodRetry";
-import sony from "../SonySDK/methods";
+// import capture from "../SonySDK/modes/capture";
+// import methodRetry from "../utils/methodRetry";
+// import sony from "../SonySDK/methods";
 import CaptureMode from "../components/modes/Capture.vue";
 
 export default defineComponent({
