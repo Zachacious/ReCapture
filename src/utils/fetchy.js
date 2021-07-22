@@ -1,6 +1,7 @@
 import sleep from "./sleep";
 import "@capacitor-community/http";
 import { Plugins } from "@capacitor/core";
+import events from "./events";
 
 const defaultOptions = {
   retries: 1,
@@ -12,26 +13,9 @@ const defaultOptions = {
   },
 };
 
-// const httpFetch = async (options) => {
-//   switch (options.method) {
-//     case "GET":
-//       return await Http.get(options.http);
-//     case "POST":
-//       return await Http.post(options.http);
-//     case "PUT":
-//       return await Http.put(options.http);
-//     case "DELETE":
-//       return await Http.delete(options.http);
-//     case "HEAD":
-//       return await Http.head(options.http);
-//     case "OPTIONS":
-//       return await Http.options(options.http);
-//     case "PATCH":
-//       return await Http.patch(options.http);
-//     default:
-//       throw new Error(`Unsupported HTTP method: ${options.method}`);
-//   }
-// };
+Plugins.Http.addListener("liveViewUpdate", async (data) =>
+  events.emit("liveViewUpdate", data)
+);
 
 const fetchy = async (options = defaultOptions) => {
   options = { ...defaultOptions, ...options };
@@ -78,8 +62,7 @@ fetchy.startStream = (
     for (let i = 0; i < retries; ++i) {
       try {
         const { Http } = Plugins;
-        res = await Http.startStream(options.http, callback);
-        console.log("res: ", res);
+        res = await Http.startStream(options.http);
         return resolve(res);
       } catch (err) {
         console.log(err);

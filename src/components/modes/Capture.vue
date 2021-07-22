@@ -116,16 +116,16 @@ export default {
       this.liveView.update.inProgress = true;
 
       try {
-        const res = await fetchy.startStream({
-          http: {
-            url: this.liveView.url,
-          },
-        });
-        // const res = await fetchy.GET({
+        // const res = await fetchy.startStream({
         //   http: {
         //     url: this.liveView.url,
         //   },
         // });
+        const res = await fetchy.GET({
+          http: {
+            url: this.liveView.url,
+          },
+        });
         console.log(res);
         this.liveView.data = res;
         console.log(this.liveView.data);
@@ -160,6 +160,8 @@ export default {
     const loadingAlert = this.$alert(this.alertOptions.tabLoading);
     await this.initialize();
     await this.updateLiveViewData();
+
+    // window.addEventListener("liveViewUpdate", (evt, data) => console.log(data));
 
     // this.liveView.update.interval = setInterval(async () => {
     //   this.updateLiveViewData();
