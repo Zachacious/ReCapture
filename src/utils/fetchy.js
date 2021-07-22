@@ -64,6 +64,63 @@ const fetchy = async (options = defaultOptions) => {
   });
 };
 
+fetchy.startStream = (
+  options = defaultOptions,
+  callback = (data) => console.log(data)
+) => {
+  options = { ...defaultOptions, ...options };
+
+  let res;
+  let retries = options.retries;
+  const retryDelay = options.retryDelay;
+
+  return new Promise(async (resolve, reject) => {
+    for (let i = 0; i < retries; ++i) {
+      try {
+        const { Http } = Plugins;
+        res = await Http.startStream(options.http, callback);
+        console.log("res: ", res);
+        return resolve(res);
+      } catch (err) {
+        console.log(err);
+        const isLastAttempt = i + 1 === retries;
+        if (isLastAttempt) {
+          console.error(`Start stream failed after ${retries} tries.`);
+          return reject(err);
+        }
+
+        if (retryDelay > 0) await sleep(retryDelay);
+      }
+    }
+  });
+};
+
+fetchy.clearStream = (id) => {
+  let res;
+  let retries = options.retries;
+  const retryDelay = options.retryDelay;
+
+  return new Promise(async (resolve, reject) => {
+    for (let i = 0; i < retries; ++i) {
+      try {
+        const { Http } = Plugins;
+        res = await Http.clearStream(id);
+        console.log("res: ", res);
+        return resolve(res);
+      } catch (err) {
+        console.log(err);
+        const isLastAttempt = i + 1 === retries;
+        if (isLastAttempt) {
+          console.error(`Start stream failed after ${retries} tries.`);
+          return reject(err);
+        }
+
+        if (retryDelay > 0) await sleep(retryDelay);
+      }
+    }
+  });
+};
+
 fetchy.GET = (options = defaultOptions) => {
   options.http.method = "GET";
   return fetchy(options);

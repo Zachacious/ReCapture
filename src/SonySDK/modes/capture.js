@@ -13,7 +13,7 @@ capture.initSession = async () => {
   const liveView = await sony.startLiveView();
 
   // should containe endpoint for liveview image
-  console.log(liveView);
+  //   console.log(liveView);
   return liveView;
 };
 
@@ -26,7 +26,7 @@ capture.endSession = async () => {
 
 capture.getLiveViewStatus = async () => {
   const events = await sony.getEvent();
-  const status = await sony.getEventProperty("liveviewStatus", events);
+  const status = await sony.getEventProperty("liveviewStatus", events.data);
   return status.liveviewStatus;
 };
 
