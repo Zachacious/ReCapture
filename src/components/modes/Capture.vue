@@ -136,7 +136,9 @@ export default {
     await this.initialize();
     this.startLiveViewStream();
 
-    this.$events.on("liveViewUpdate", (data) => this.updateLiveView(data));
+    this.$events.on("liveViewUpdate", async (data) =>
+      this.updateLiveView(data)
+    );
 
     // this.liveView.status.interval = setInterval(async () => {
     //   this.liveViewKeepAlive();
