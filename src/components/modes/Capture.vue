@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-center">
-    Capture
-    <!-- <alert ref="alert" /> -->
+    <img :src="liveViewSource" class="liveViewImage full-width" />
   </div>
 </template>
 
@@ -17,15 +16,16 @@ export default {
   data() {
     return {
       liveView: {
+        trigger: false,
         url: "",
-        update: {
-          interval: null,
-          delay: 10000,
-          inProgress: false,
-        },
+        // update: {
+        //   interval: null,
+        //   delay: 10000,
+        //   inProgress: false,
+        // },
         status: {
           interval: null,
-          delay: 25000,
+          delay: 1000,
           inProgress: false,
         },
         data: null,
@@ -38,6 +38,14 @@ export default {
         },
       },
     };
+  },
+
+  computed: {
+    liveViewSource() {
+      this.liveView.trigger;
+      if (!this.liveView.data) return "";
+      return `data:image/jpeg;base64,${this.liveView.data}`;
+    },
   },
 
   methods: {
@@ -68,7 +76,6 @@ export default {
       if (this.liveView.status.inProgress) return;
 
       const connectionStatus = await sony.checkConnection();
-      console.log(connectionStatus);
       if (!connectionStatus.data) {
         await this.cleanup();
         return;
@@ -83,69 +90,38 @@ export default {
       this.liveView.status.inProgress = false;
     },
 
-    // async startLiveView() {
-    //     console.log("HERE");
-    //   console.log(this.liveView.data);
-    //   if (this.liveView.update.inProgress || !this.liveView.url) return;
-
-    //   console.log("Im here");
-
-    //   this.liveView.update.inProgress = true;
-
-    //   try {
-    //     const res = await fetchy.GET({ http: { url: this.liveView.url } });
-    //     console.log(res);
-    //     this.liveView.data = res;
-    //     console.log(this.liveView.data);
-    //   } catch (err) {
-    //     console.log("ERROR");
-    //     console.log(err);
-    //   }
-
-    //   this.liveView.update.inProgress = false;
-    // },
-
-    // pulls fresh live view data
-    async updateLiveViewData() {
-      console.log("HERE");
-      console.log(this.liveView.data);
-      if (this.liveView.update.inProgress || !this.liveView.url) return;
-
-      console.log("Im here");
-
-      this.liveView.update.inProgress = true;
+    async startLiveViewStream() {
+      if (!this.liveView.url) return;
 
       try {
-        // const res = await fetchy.startStream({
-        //   http: {
-        //     url: this.liveView.url,
-        //   },
-        // });
-        const res = await fetchy.GET({
+        const res = await fetchy.startStream({
           http: {
             url: this.liveView.url,
           },
         });
-        console.log(res);
         this.liveView.data = res;
         console.log(this.liveView.data);
       } catch (err) {
         console.log("ERROR");
         console.log(err);
       }
+    },
 
-      this.liveView.update.inProgress = false;
+    async updateLiveView(data) {
+      if (!data) return;
+      if (!data.hasOwnProperty("imgData")) return;
+
+      this.liveView.data = data.imgData;
+      this.liveView.trigger = !this.liveView.trigger;
     },
 
     async cleanup() {
       await this.$methodRetry(capture.endSession, 3, 250);
 
-      if (this.liveView.update.interval)
-        clearInterval(this.liveView.update.interval);
       if (this.liveView.status.interval)
         clearInterval(this.liveView.status.interval);
 
-      // await fetchy.clearStream();
+      await fetchy.clearStream();
     },
   },
 
@@ -156,22 +132,23 @@ export default {
   },
 
   async mounted() {
-    // this.$refs.alert.open(this.alertOptions.tabLoading);
     const loadingAlert = this.$alert(this.alertOptions.tabLoading);
     await this.initialize();
-    await this.updateLiveViewData();
+    this.startLiveViewStream();
 
-    // window.addEventListener("liveViewUpdate", (evt, data) => console.log(data));
+    this.$events.on("liveViewUpdate", (data) => this.updateLiveView(data));
 
-    // this.liveView.update.interval = setInterval(async () => {
-    //   this.updateLiveViewData();
-    // }, this.liveView.update.delay);
     // this.liveView.status.interval = setInterval(async () => {
     //   this.liveViewKeepAlive();
     // }, this.liveView.status.delay);
 
-    // this.$refs.alert.close();
     loadingAlert.close();
   },
 };
 </script>
+
+<style scoped lang="scss">
+.liveViewImage {
+  //   transform: rotate(90deg);
+}
+</style>

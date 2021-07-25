@@ -48,10 +48,7 @@ const fetchy = async (options = defaultOptions) => {
   });
 };
 
-fetchy.startStream = (
-  options = defaultOptions,
-  callback = (data) => console.log(data)
-) => {
+fetchy.startStream = async (options = defaultOptions) => {
   options = { ...defaultOptions, ...options };
 
   let res;
@@ -78,7 +75,7 @@ fetchy.startStream = (
   });
 };
 
-fetchy.clearStream = (id) => {
+fetchy.clearStream = async (options = defaultOptions) => {
   let res;
   let retries = options.retries;
   const retryDelay = options.retryDelay;
@@ -87,7 +84,7 @@ fetchy.clearStream = (id) => {
     for (let i = 0; i < retries; ++i) {
       try {
         const { Http } = Plugins;
-        res = await Http.clearStream(id);
+        res = await Http.clearStream();
         console.log("res: ", res);
         return resolve(res);
       } catch (err) {
