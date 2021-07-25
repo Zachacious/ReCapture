@@ -130,7 +130,14 @@ sony.startLiveView = async () => {
     return makeReturnData(null, "Error start live view not available");
   }
 
+  if (!calls.data.includes("startLiveview"))
+    console.log("Can't call getAvailableLiveviewSize--------------");
+
   try {
+    const sizes = await connection.makeAPICall(bodies.getAvailableLiveviewSize);
+    console.log("Supported Liveview sizes", sizes);
+    console.log(sizes);
+    console.log("*****************************************************");
     const res = await connection.makeAPICall(bodies.startLiveview);
     const success = res[0];
     return makeReturnData(res, !success ? "Unable to start live view" : null);
@@ -152,7 +159,7 @@ sony.endLiveView = async () => {
   }
 
   try {
-    const res = await connection.makeAPICall(bodies.startLiveview);
+    const res = await connection.makeAPICall(bodies.stopLiveview);
     const success = res[0];
     return makeReturnData(res, !success ? "Unable to end live view" : null);
   } catch (err) {

@@ -372,7 +372,7 @@ sony = {
  "id": 1
 }
   */
-  getSupportedLiveviewSize: {
+  getSupportedLiveviewSizes: {
     method: "getSupportedLiveviewSize",
     params: [],
     id: 1,
