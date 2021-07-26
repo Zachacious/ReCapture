@@ -13,9 +13,9 @@ const defaultOptions = {
   },
 };
 
-Plugins.Http.addListener("liveViewUpdate", async (data) =>
-  events.emit("liveViewUpdate", data)
-);
+// Plugins.Http.addListener("liveViewUpdate", async (data) =>
+//   events.emit("liveViewUpdate", data)
+// );
 
 const fetchy = async (options = defaultOptions) => {
   options = { ...defaultOptions, ...options };
@@ -99,6 +99,11 @@ fetchy.clearStream = async (options = defaultOptions) => {
       }
     }
   });
+};
+
+fetchy.getLiveViewFrame = async () => {
+  const { Http } = Plugins;
+  return await Http.getLiveViewFrame();
 };
 
 fetchy.GET = (options = defaultOptions) => {

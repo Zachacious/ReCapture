@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-center">
-    <img :src="liveViewSource" class="liveViewImage full-width" />
+    <img :src="liveViewSource" class="full-width" />
   </div>
 </template>
 
@@ -8,24 +8,22 @@
 import sony from "../../SonySDK/methods";
 import capture from "../../SonySDK/modes/capture";
 import { fetchy } from "../../utils/fetchy";
-// import alert from "../alert.vue";
 
 export default {
-  //   components: { alert },
   name: "CaptureMode",
   data() {
     return {
       liveView: {
         trigger: false,
         url: "",
-        // update: {
-        //   interval: null,
-        //   delay: 10000,
-        //   inProgress: false,
-        // },
+        update: {
+          interval: null,
+          delay: 75,
+          inProgress: false,
+        },
         status: {
           interval: null,
-          delay: 1000,
+          delay: 2000,
           inProgress: false,
         },
         data: null,
@@ -90,6 +88,22 @@ export default {
       this.liveView.status.inProgress = false;
     },
 
+    async updateLiveViewFrame() {
+      if (this.liveView.update.inProgress) return;
+      this.liveView.update.inProgress = true;
+
+      try {
+        const data = await fetchy.getLiveViewFrame();
+        if (data) {
+          this.updateLiveView(data);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+
+      this.liveView.update.inProgress = false;
+    },
+
     async startLiveViewStream() {
       if (!this.liveView.url) return;
 
@@ -120,6 +134,8 @@ export default {
 
       if (this.liveView.status.interval)
         clearInterval(this.liveView.status.interval);
+      if (this.liveView.update.interval)
+        clearInterval(this.liveView.update.interval);
 
       await fetchy.clearStream();
     },
@@ -128,6 +144,7 @@ export default {
   async beforeUnmount() {
     const loadingAlert = this.$alert(this.alertOptions.tabLoading);
     await this.cleanup();
+    console.log("Cleared!"); // loading alert never closes
     loadingAlert.close();
   },
 
@@ -136,9 +153,13 @@ export default {
     await this.initialize();
     this.startLiveViewStream();
 
-    this.$events.on("liveViewUpdate", async (data) =>
-      this.updateLiveView(data)
-    );
+    // this.$events.on("liveViewUpdate", async (data) =>
+    //   this.updateLiveView(data)
+    // );
+
+    this.liveView.update.interval = setInterval(async () => {
+      this.updateLiveViewFrame();
+    }, this.liveView.update.delay);
 
     // this.liveView.status.interval = setInterval(async () => {
     //   this.liveViewKeepAlive();
@@ -151,6 +172,6 @@ export default {
 
 <style scoped lang="scss">
 .liveViewImage {
-  //   transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 </style>

@@ -130,9 +130,6 @@ sony.startLiveView = async () => {
     return makeReturnData(null, "Error start live view not available");
   }
 
-  if (!calls.data.includes("startLiveview"))
-    console.log("Can't call getAvailableLiveviewSize--------------");
-
   try {
     const res = await connection.makeAPICall(bodies.startLiveview);
     const success = res[0];
