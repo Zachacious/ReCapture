@@ -19,7 +19,9 @@ capture.initSession = async () => {
 
 capture.endSession = async () => {
   const endLiveView = await sony.endLiveView();
+  console.log("live view ended");
   const endCaptureSession = await sony.endCaptureSession();
+  console.log("capture session ended");
 
   return makeReturnData({ result: "passthrough" }, "");
 };

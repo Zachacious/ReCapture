@@ -130,7 +130,7 @@ export default {
     },
 
     async cleanup() {
-      await this.$methodRetry(capture.endSession, 3, 250);
+      console.log("cleanup started");
 
       if (this.liveView.status.interval)
         clearInterval(this.liveView.status.interval);
@@ -138,14 +138,17 @@ export default {
         clearInterval(this.liveView.update.interval);
 
       await fetchy.clearStream();
+      await this.$methodRetry(capture.endSession, 3, 250);
+      console.log("Cleanup is finished");
     },
   },
 
   async beforeUnmount() {
+    console.log("Starting before unmount");
     const loadingAlert = this.$alert(this.alertOptions.tabLoading);
     await this.cleanup();
-    console.log("Cleared!"); // loading alert never closes
     loadingAlert.close();
+    console.log("before unmount done");
   },
 
   async mounted() {
