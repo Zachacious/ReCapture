@@ -1,5 +1,6 @@
 # Recapture
 
+<img src="screen1.png" width="400px" />
 Remote camera software for select Sony Camera models
 Uses Vue.js, Quasar, Capacitor, and Sony Camera SDK(beta, archived)
 
