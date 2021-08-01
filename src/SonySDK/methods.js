@@ -121,39 +121,71 @@ sony.getCameraStatus = async () => {
   );
 };
 
-sony.test = async () => {
-  console.log("test");
+sony.halfPressShutter = async () => {
+  console.log("half press shutter");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
-  const res = await sony.getAvailableMethods();
-  console.log(res);
+
+  const camEvents = await sony.getEvent();
+  if (camEvents.error || !camEvents.data) return camEvents;
 
   try {
-    console.log(await connection.makeAPICall(bodies.getMethodTypes));
+    const res = await connection.makeAPICall(bodies.actHalfPressShutter);
+    console.log(res);
   } catch (err) {
     console.error(err);
-  }
-
-  console.log(
-    "setaf pos",
-    await connection.makeAPICall(bodies.setTouchAFPosition)
-  );
-
-  try {
-    console.log(await connection.makeAPICall(bodies.getEvent));
-  } catch (err) {
-    console.error(err);
-  }
-
-  // try to set liveview frame info ?? why not working ??
-  try {
-    console.log(
-      "Attempt set frame info on",
-      await connection.makeAPICall(bodies.enableLiveviewFrameInfo)
-    );
-  } catch (err) {
-    console.error(err);
+    return makeReturnData(null, err);
   }
 };
+
+sony.cancelHalfPressShutter = async () => {
+  console.log("cancel half press shutter");
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
+  const camEvents = await sony.getEvent();
+  if (camEvents.error || !camEvents.data) return camEvents;
+
+  try {
+    const res = await connection.makeAPICall(bodies.cancelHalfPressShutter);
+    console.log(res);
+  } catch (err) {
+    console.error(err);
+    return makeReturnData(null, err);
+  }
+};
+
+// sony.test = async () => {
+//   console.log("test");
+//   if (!connection.isConnected) return makeReturnData(null, "Not connected");
+//   const res = await sony.getAvailableMethods();
+//   console.log(res);
+
+//   try {
+//     console.log(await connection.makeAPICall(bodies.getMethodTypes));
+//   } catch (err) {
+//     console.error(err);
+//   }
+
+//   console.log(
+//     "setaf pos",
+//     await connection.makeAPICall(bodies.setTouchAFPosition)
+//   );
+
+//   try {
+//     console.log(await connection.makeAPICall(bodies.getEvent));
+//   } catch (err) {
+//     console.error(err);
+//   }
+
+//   // try to set liveview frame info ?? why not working ??
+//   try {
+//     console.log(
+//       "Attempt set frame info on",
+//       await connection.makeAPICall(bodies.enableLiveviewFrameInfo)
+//     );
+//   } catch (err) {
+//     console.error(err);
+//   }
+// };
 
 sony.startLiveView = async () => {
   console.log("start live view");

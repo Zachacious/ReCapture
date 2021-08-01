@@ -1,6 +1,7 @@
 <template>
   <div class="flex flex-center full-width full-height">
     <img :src="liveViewSource" class="liveview-image full-width" />
+    <q-btn label="half shutter" @click="toggleHalfShutter()" />
   </div>
 </template>
 
@@ -47,6 +48,12 @@ export default {
   },
 
   methods: {
+    async toggleHalfShutter() {
+      this.halfShutter = !this.halfShutter;
+      if (this.halfShutter) console.log(await sony.halfPressShutter());
+      if (!this.halfShutter) console.log(await sony.cancelHalfPressShutter());
+    },
+
     async initialize() {
       const connectionStatus = await sony.checkConnection();
       console.log(connectionStatus);
