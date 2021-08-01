@@ -10,6 +10,8 @@ capture.initSession = async () => {
   // not all cameras require starting capture session
   // not sure how to deal with that yet
   const beginCaptureSession = await sony.beginCaptureSession();
+  const availableShootModes = await sony.getAvailableShootMode();
+  console.log(availableShootModes);
   const liveView = await sony.startLiveView();
 
   // should containe endpoint for liveview image

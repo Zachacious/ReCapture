@@ -17,6 +17,7 @@ sony.getAvailableMethods = async () => {
   try {
     calls = await connection.makeAPICall(bodies.getAvailableApiList);
     calls = calls[0];
+    // console.log("Available Methods: ", calls);
     return makeReturnData(calls, null);
   } catch (err) {
     return makeReturnData(null, err);
@@ -75,6 +76,7 @@ sony.getEvent = async () => {
 
   try {
     res = await connection.makeAPICall(bodies.getEvent);
+    console.log(res);
     return makeReturnData(res, res ? null : "Unable to get event");
   } catch (err) {
     console.error(err);
@@ -119,6 +121,40 @@ sony.getCameraStatus = async () => {
   );
 };
 
+sony.test = async () => {
+  console.log("test");
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+  const res = await sony.getAvailableMethods();
+  console.log(res);
+
+  try {
+    console.log(await connection.makeAPICall(bodies.getMethodTypes));
+  } catch (err) {
+    console.error(err);
+  }
+
+  console.log(
+    "setaf pos",
+    await connection.makeAPICall(bodies.setTouchAFPosition)
+  );
+
+  try {
+    console.log(await connection.makeAPICall(bodies.getEvent));
+  } catch (err) {
+    console.error(err);
+  }
+
+  // try to set liveview frame info ?? why not working ??
+  try {
+    console.log(
+      "Attempt set frame info on",
+      await connection.makeAPICall(bodies.enableLiveviewFrameInfo)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 sony.startLiveView = async () => {
   console.log("start live view");
   if (!connection.isConnected) return makeReturnData(null, "Not connected");
@@ -131,12 +167,40 @@ sony.startLiveView = async () => {
   }
 
   try {
-    const res = await connection.makeAPICall(bodies.startLiveview);
-    const success = res[0];
-    return makeReturnData(res, !success ? "Unable to start live view" : null);
+    console.log(
+      "Attempt to set Still mode on",
+      await connection.makeAPICall(bodies.setShootModeStill)
+    );
   } catch (err) {
     console.log(err);
-    return makeReturnData(null, err);
+  }
+
+  // try to set liveview frame info ?? why not working ??
+  try {
+    console.log(
+      "Attempt set frame info on",
+      await connection.makeAPICall(bodies.enableLiveviewFrameInfo)
+    );
+  } catch (err) {
+    console.error(err);
+  }
+
+  try {
+    const res = await connection.makeAPICall(bodies.startLiveviewWithSizeLarge);
+    const success = res[0];
+    if (!success) throw "Unable to start live view Large";
+    return makeReturnData(res, null);
+  } catch (err) {
+    console.error(err);
+
+    try {
+      const res = await connection.makeAPICall(bodies.startLiveview);
+      const success = res[0];
+      return makeReturnData(res, !success ? "Unable to start live view" : null);
+    } catch (err) {
+      console.log(err);
+      return makeReturnData(null, err);
+    }
   }
 };
 
@@ -158,6 +222,32 @@ sony.endLiveView = async () => {
   } catch (err) {
     console.log(err);
     return makeReturnData(null, err);
+  }
+};
+
+sony.getAvailableShootMode = async () => {
+  console.log("get supported shoot modes");
+  if (!connection.isConnected) return makeReturnData(null, "Not connected");
+
+  const calls = await sony.getAvailableMethods();
+  if (calls.error) return calls;
+
+  if (!calls.data.includes("getAvailableShootMode")) {
+    return makeReturnData(
+      null,
+      "Error get supported shoot modes not available"
+    );
+  }
+
+  try {
+    const res = await connection.makeAPICall(bodies.getAvailableShootMode);
+    console.log(res);
+    return makeReturnData(
+      res,
+      res ? null : "Unable to get supported shoot modes"
+    );
+  } catch {
+    return makeReturnData(null, "Unable to get supported shoot modes");
   }
 };
 

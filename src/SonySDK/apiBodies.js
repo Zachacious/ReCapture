@@ -633,7 +633,8 @@ sony = {
 
   setTouchAFPosition: {
     method: "setTouchAFPosition",
-    params: [sony.touchAFPos.x, sony.touchAFPos.y], // origins top left of screen
+    params: [24.5, 45.4],
+    // params: [sony.touchAFPos.x, sony.touchAFPos.y], // origins top left of screen
     id: 1,
     version: "1.0",
   },

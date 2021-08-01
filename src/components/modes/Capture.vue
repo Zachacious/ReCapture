@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-center">
-    <img :src="liveViewSource" class="full-width" />
+  <div class="flex flex-center full-width full-height">
+    <img :src="liveViewSource" class="liveview-image full-width" />
   </div>
 </template>
 
@@ -18,12 +18,12 @@ export default {
         url: "",
         update: {
           interval: null,
-          delay: 75,
+          delay: 100,
           inProgress: false,
         },
         status: {
           interval: null,
-          delay: 2000,
+          delay: 5000,
           inProgress: false,
         },
         data: null,
@@ -125,8 +125,14 @@ export default {
       if (!data) return;
       if (!data.hasOwnProperty("imgData")) return;
 
-      this.liveView.data = data.imgData;
-      this.liveView.trigger = !this.liveView.trigger;
+      if (data.imgData) {
+        this.liveView.data = data.imgData;
+        this.liveView.trigger = !this.liveView.trigger;
+      }
+
+      if (data.hasOwnProperty("frame")) {
+        console.log(data.frame);
+      }
     },
 
     async cleanup() {
@@ -156,17 +162,13 @@ export default {
     await this.initialize();
     this.startLiveViewStream();
 
-    // this.$events.on("liveViewUpdate", async (data) =>
-    //   this.updateLiveView(data)
-    // );
-
     this.liveView.update.interval = setInterval(async () => {
       this.updateLiveViewFrame();
     }, this.liveView.update.delay);
 
-    // this.liveView.status.interval = setInterval(async () => {
-    //   this.liveViewKeepAlive();
-    // }, this.liveView.status.delay);
+    this.liveView.status.interval = setInterval(async () => {
+      this.liveViewKeepAlive();
+    }, this.liveView.status.delay);
 
     loadingAlert.close();
   },
@@ -174,7 +176,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.liveViewImage {
+.liveview-image {
   transform: rotate(90deg);
 }
 </style>
